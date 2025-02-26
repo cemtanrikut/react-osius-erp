@@ -1,9 +1,15 @@
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaHome, FaTicketAlt } from "react-icons/fa";
 
-export default function Sidebar() {
+export default function Sidebar({ setSidebarWidth }) {
   const [isOpen, setIsOpen] = useState(true);
+
+  useEffect(() => {
+    if (setSidebarWidth) {
+      setSidebarWidth(isOpen ? 256 : 64);
+    }
+  }, [isOpen, setSidebarWidth]);
 
   return (
     <div className="flex">
@@ -22,13 +28,16 @@ export default function Sidebar() {
         </button>
 
         {/* Menü İçeriği */}
-        <nav className="flex flex-col gap-4">
+        <nav className="flex flex-col gap-2">
           {/* Dashboard Linki */}
           <NavLink
             to="/dashboard"
+            end
             className={({ isActive }) =>
-              `flex items-center gap-2 p-2 rounded ${
-                isActive ? "bg-blue-900 font-bold" : "hover:bg-blue-800"
+              `flex items-center gap-3 p-3 rounded-lg w-full transition-all ${
+                isActive
+                  ? "bg-blue-600 text-white font-bold"
+                  : "hover:bg-blue-800"
               }`
             }
           >
@@ -40,8 +49,10 @@ export default function Sidebar() {
           <NavLink
             to="/dashboard/tickets"
             className={({ isActive }) =>
-              `flex items-center gap-2 p-2 rounded ${
-                isActive ? "bg-blue-900 font-bold" : "hover:bg-blue-800"
+              `flex items-center gap-3 p-3 rounded-lg w-full transition-all ${
+                isActive
+                  ? "bg-blue-600 text-white font-bold"
+                  : "hover:bg-blue-800"
               }`
             }
           >
