@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { FaBars, FaTimes, FaHome, FaUser, FaCog } from "react-icons/fa";
+import { FaBars, FaTimes, FaHome, FaTicketAlt } from "react-icons/fa";
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
@@ -23,21 +23,18 @@ export default function Sidebar() {
 
         {/* Menü İçeriği */}
         <nav className="flex flex-col gap-4">
+          {/* Dashboard Linki */}
           <div className="hover:bg-blue-800 p-2 rounded">
             <Link to="/dashboard" className="flex items-center gap-2">
               <FaHome />
               {isOpen && <span>Dashboard</span>}
             </Link>
           </div>
-          <div className="hover:bg-blue-800 p-2 rounded">
-            <Link to="/dashboard/homepage" className="flex items-center gap-2">
-              <FaUser />
-              {isOpen && <span>Home</span>}
-            </Link>
-          </div>
+
+          {/* Tickets Linki */}
           <div className="hover:bg-blue-800 p-2 rounded">
             <Link to="/dashboard/tickets" className="flex items-center gap-2">
-              <FaCog />
+              <FaTicketAlt />
               {isOpen && <span>Tickets</span>}
             </Link>
           </div>

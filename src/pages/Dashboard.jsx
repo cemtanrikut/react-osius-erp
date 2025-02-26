@@ -1,6 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { Outlet } from "react-router-dom";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -20,7 +19,7 @@ export default function Dashboard() {
           Osius ERP Panel
         </header>
         <main>
-          <Outlet /> {/* Buraya değişen sayfa içeriği yüklenecek */}
+          <Outlet /> {/* Alt sayfaların içeriği burada gösterilecek */}
         </main>
         <button
           onClick={handleLogout}
