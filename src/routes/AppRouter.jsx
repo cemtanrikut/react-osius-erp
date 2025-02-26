@@ -12,7 +12,7 @@ export default function AppRouter() {
 
         {/* Dashboard ve Alt Sayfaları */}
         <Route path="/dashboard" element={<Dashboard />}>
-          <Route path="tickets" element={<Tickets />} />
+          <Route path="/dashboard/tickets" element={<Tickets />} />
         </Route>
 
         {/* Eğer bilinmeyen bir sayfaya gidilirse Login'e yönlendir */}

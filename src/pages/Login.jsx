@@ -8,7 +8,7 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (email === "admin@osius.com" && password === "password") {
+    if (email === "admin@osius.nl" && password === "admin") {
       navigate("/dashboard");
     } else {
       alert("Hatalı giriş! Lütfen bilgilerinizi kontrol edin.");

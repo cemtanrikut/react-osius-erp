@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import { FaBars, FaTimes, FaHome, FaTicketAlt } from "react-icons/fa";
 
@@ -24,20 +24,30 @@ export default function Sidebar() {
         {/* Menü İçeriği */}
         <nav className="flex flex-col gap-4">
           {/* Dashboard Linki */}
-          <div className="hover:bg-blue-800 p-2 rounded">
-            <Link to="/dashboard" className="flex items-center gap-2">
-              <FaHome />
-              {isOpen && <span>Dashboard</span>}
-            </Link>
-          </div>
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              `flex items-center gap-2 p-2 rounded ${
+                isActive ? "bg-blue-900 font-bold" : "hover:bg-blue-800"
+              }`
+            }
+          >
+            <FaHome />
+            {isOpen && <span>Dashboard</span>}
+          </NavLink>
 
           {/* Tickets Linki */}
-          <div className="hover:bg-blue-800 p-2 rounded">
-            <Link to="/dashboard/tickets" className="flex items-center gap-2">
-              <FaTicketAlt />
-              {isOpen && <span>Tickets</span>}
-            </Link>
-          </div>
+          <NavLink
+            to="/dashboard/tickets"
+            className={({ isActive }) =>
+              `flex items-center gap-2 p-2 rounded ${
+                isActive ? "bg-blue-900 font-bold" : "hover:bg-blue-800"
+              }`
+            }
+          >
+            <FaTicketAlt />
+            {isOpen && <span>Tickets</span>}
+          </NavLink>
         </nav>
       </div>
     </div>
