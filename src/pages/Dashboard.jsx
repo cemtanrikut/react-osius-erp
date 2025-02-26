@@ -32,14 +32,6 @@ export default function Dashboard() {
         <main className="flex-1 p-6 mt-16 bg-gray-100">
           <Outlet /> {/* Alt sayfalar burada yükleniyor */}
         </main>
-
-        {/* Logout Butonu */}
-        <button
-          onClick={handleLogout}
-          className="m-4 bg-red-500 text-white p-3 rounded-lg hover:bg-red-600"
-        >
-          Logout
-        </button>
       </div>
     </div>
   );
