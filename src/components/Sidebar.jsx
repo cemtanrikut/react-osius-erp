@@ -1,11 +1,12 @@
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { FaBars, FaTimes, FaHome, FaTicketAlt, FaSignOutAlt } from "react-icons/fa";
+import { FaBars, FaTimes, FaHome, FaTicketAlt, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 export default function Sidebar({ setSidebarWidth }) {
   const [isOpen, setIsOpen] = useState(true);
   const navigate = useNavigate();
+  const user = { name: "Cem Tanrikut" };
 
   useEffect(() => {
     if (setSidebarWidth) {
@@ -63,6 +64,20 @@ export default function Sidebar({ setSidebarWidth }) {
           </span>
         </NavLink>
       </nav>
+
+      {/* Kullanıcı Bilgisi - Logout'un Üstünde */}
+      <div className="mb-4">
+        <button
+          className="relative flex items-center p-3 rounded-lg w-full bg-blue-800 hover:bg-blue-500 transition-all"
+        >
+          <FaUserCircle className="text-xl absolute left-3 transform -translate-y-1/2" />
+          <span
+            className={`transition-all duration-300 ${isOpen ? "ml-10 opacity-100" : "opacity-0"}`}
+          >
+            {user.name}
+          </span>
+        </button>
+      </div>
 
       {/* Logout Butonu - Sidebar'ın En Altında */}
       <button

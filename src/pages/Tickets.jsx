@@ -27,7 +27,9 @@ export default function Tickets() {
       { id: "T-002", title: "Bug fix", assignedTo: "Ramazan", date: "26-02-2025", type: "Klacht", location: "Osius Amsterdam Office", file: null }
     ],
     inProgress: [
-      { id: "T-003", title: "Database integration", assignedTo: "Abdullah Soyaslan", date: "25-02-2025 17:55", type: "Comentaar", location: "Amsterdam", file: "db_schema.png" }
+      { id: "T-003", title: "Database integration", assignedTo: "Abdullah Soyaslan", date: "25-02-2025 17:55", type: "Comentaar", location: "Amsterdam", file: "db_schema.png" },
+      { id: "T-005", title: "Mobile development with React Native", assignedTo: "Cem Tanrikut", date: "25-02-2025 15:33", type: "Comentaar", location: "Amsterdam", file: "react_native.jsx" }
+
     ],
     done: [
       { id: "T-004", title: "Update for UI", assignedTo: "Jony Ive", date: "24-02-2025 11:09", type: "Complimenten", location: "Apple, California", file: "design_final.jpg" }
