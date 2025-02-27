@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { FaUser, FaCalendarAlt, FaMapMarkerAlt, FaFileAlt, FaHashtag } from "react-icons/fa";
+import { FaUser, FaCalendarAlt, FaMapMarkerAlt, FaFileAlt, FaHashtag, FaPlus } from "react-icons/fa";
 
 // Sütun renkleri
 const columnColors = {
@@ -65,8 +65,20 @@ export default function Tickets() {
   };
 
   return (
-    <div className="p-0">
-      <h1 className="text-2xl p-6">Meldingen</h1>
+    <div className="p-6">
+      {/* Üst Kısım: Başlık ve Buton */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Meldingen</h1>
+
+        {/* New Ticket Butonu */}
+        <button
+          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 hover:scale-105 transition-all"
+          onClick={() => alert("New Ticket Modal Açılacak!")}
+        >
+          <FaPlus />
+          New Ticket
+        </button>
+      </div>
       
       {/* Trello Tarzı Kanban Board */}
       <DragDropContext onDragEnd={onDragEnd}>
