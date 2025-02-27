@@ -8,6 +8,8 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Örnek giriş kontrolü
     if (email === "admin@osius.nl" && password === "admin") {
       navigate("/dashboard");
     } else {
@@ -17,9 +19,16 @@ export default function Login() {
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded-xl shadow-lg w-96">
-        <h2 className="text-2xl font-bold mb-4 text-center">Osius ERP Login</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-96 flex flex-col items-center">
+        
+        {/* Osius Logo */}
+        <img src="/osius_logo.png" alt="Osius Logo" className="h-16 mb-6" />
+
+        {/* Başlık */}
+        <h2 className="text-2xl font-bold mb-4 text-center">CRM Login</h2>
+
+        {/* Giriş Formu */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
           <input
             type="email"
             placeholder="Email"

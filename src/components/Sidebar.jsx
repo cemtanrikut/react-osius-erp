@@ -14,13 +14,14 @@ export default function Sidebar({ setSidebarWidth }) {
   }, [isOpen, setSidebarWidth]);
 
   return (
-    <div className="flex flex-col bg-blue-700 text-white h-screen p-5 transition-all"
+    <div
+      className="flex flex-col bg-blue-700 text-white h-screen p-5 transition-all duration-300 relative"
       style={{ width: isOpen ? "256px" : "64px" }}
     >
       {/* Menü Aç/Kapat Butonu */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="text-white mb-5 text-2xl"
+        className="text-white mb-5 text-2xl flex items-center"
       >
         {isOpen ? <FaTimes /> : <FaBars />}
       </button>
@@ -32,36 +33,48 @@ export default function Sidebar({ setSidebarWidth }) {
           to="/dashboard"
           end
           className={({ isActive }) =>
-            `flex items-center gap-3 p-3 rounded-lg w-full transition-all ${
+            `relative flex items-center p-3 rounded-lg w-full transition-all ${
               isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
             }`
           }
         >
-          <FaHome />
-          {isOpen && <span>Dashboard</span>}
+          <FaHome className="text-xl absolute left-3 transform -translate-y-1/2" />
+          <span
+            className={`transition-all duration-300 ${isOpen ? "ml-10 opacity-100" : "opacity-0"}`}
+          >
+            Dashboard
+          </span>
         </NavLink>
 
         {/* Tickets Linki */}
         <NavLink
           to="/dashboard/tickets"
           className={({ isActive }) =>
-            `flex items-center gap-3 p-3 rounded-lg w-full transition-all ${
+            `relative flex items-center p-3 rounded-lg w-full transition-all ${
               isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
             }`
           }
         >
-          <FaTicketAlt />
-          {isOpen && <span>Tickets</span>}
+          <FaTicketAlt className="text-xl left-3 absolute transform -translate-y-1/2" />
+          <span
+            className={`transition-all duration-300 ${isOpen ? "ml-10 opacity-100" : "opacity-0"}`}
+          >
+            Tickets
+          </span>
         </NavLink>
       </nav>
 
       {/* Logout Butonu - Sidebar'ın En Altında */}
       <button
         onClick={() => navigate("/")}
-        className="mt-auto flex items-center gap-3 p-3 rounded-lg w-full bg-red-600 hover:bg-red-700 transition-all"
+        className="relative flex items-center p-3 rounded-lg w-full bg-red-600 hover:bg-red-700 transition-all mt-auto"
       >
-        <FaSignOutAlt />
-        {isOpen && <span>Logout</span>}
+        <FaSignOutAlt className="text-xl absolute left-3 transform -translate-y-1/2" />
+        <span
+          className={`transition-all duration-300 ${isOpen ? "ml-10 opacity-100" : "opacity-0"}`}
+        >
+          Logout
+        </span>
       </button>
     </div>
   );
