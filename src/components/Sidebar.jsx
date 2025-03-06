@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { FaBars, FaTimes, FaHome, FaTicketAlt, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
+import { FaBars, FaTimes, FaHome, FaTicketAlt, FaSignOutAlt, FaUserCircle, FaUsers, FaBuilding } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 export default function Sidebar({ setSidebarWidth }) {
@@ -48,7 +48,7 @@ export default function Sidebar({ setSidebarWidth }) {
         </NavLink>
 
         {/* Tickets Linki */}
-        <NavLink
+        {/* <NavLink
           to="/dashboard/tickets"
           className={({ isActive }) =>
             `relative flex items-center p-3 rounded-lg w-full transition-all ${
@@ -62,7 +62,59 @@ export default function Sidebar({ setSidebarWidth }) {
           >
             Tickets
           </span>
+        </NavLink> */}
+
+        {/* List Linki */}
+        <NavLink
+            to="/dashboard/list"
+            className={({ isActive }) =>
+                `relative flex items-center p-3 rounded-lg w-full transition-all ${
+                isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
+                }`
+            }
+        >
+          <FaTicketAlt className="text-xl left-3 absolute transform -translate-y-1/2" />
+          <span
+            className={`transition-all duration-300 ${isOpen ? "ml-10 opacity-100" : "opacity-0"}`}
+          >
+            Tickets
+          </span>
         </NavLink>
+
+        {/* ✅ Customers Linki */}
+        <NavLink
+          to="/dashboard/customers"
+          className={({ isActive }) =>
+            `relative flex items-center p-3 rounded-lg w-full transition-all ${
+              isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
+            }`
+          }
+        >
+          <FaUsers className="text-xl left-3 absolute transform -translate-y-1/2" />
+          <span
+            className={`transition-all duration-300 ${isOpen ? "ml-10 opacity-100" : "opacity-0"}`}
+          >
+            Customers
+          </span>
+        </NavLink>
+
+        {/* ✅ Buildings Linki */}
+        <NavLink
+          to="/dashboard/buildings"
+          className={({ isActive }) =>
+            `relative flex items-center p-3 rounded-lg w-full transition-all ${
+              isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
+            }`
+          }
+        >
+          <FaBuilding className="text-xl left-3 absolute transform -translate-y-1/2" />
+          <span
+            className={`transition-all duration-300 ${isOpen ? "ml-10 opacity-100" : "opacity-0"}`}
+          >
+            Buildings
+          </span>
+        </NavLink>
+
       </nav>
 
       {/* Kullanıcı Bilgisi - Logout'un Üstünde */}
