@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { FaUser, FaMapMarkerAlt, FaCalendarAlt, FaHashtag, FaPlus, FaTimes, FaFileUpload, FaPaperclip, FaRegSmile, FaPaperPlane, FaFilter, FaTrash, FaExclamationTriangle } from "react-icons/fa";
@@ -57,6 +57,8 @@ export default function List() {
     location: locations[0],
     file: null,
   });
+  // 🏷 Yeni eklenen state (Büyük resim önizleme için)
+  const [previewImage, setPreviewImage] = useState(null);
   // ❌ **Delete Confirmation Modal için State**
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState(null);
@@ -93,7 +95,7 @@ export default function List() {
   // Yeni ticket ekleme
   const addTicket = () => {
     if (!newTicket.title || !newTicket.description) {
-      toast.error("Title ve Description boş bırakılamaz!", { position: "top-right" });
+      toast.error("Title and Description area should be filled!", { position: "top-right" });
       return;
     }
 
@@ -155,22 +157,46 @@ export default function List() {
   // Dosya seçme için ref
   const fileInputRef = useRef(null);
   // Dosya seçildiğinde çağrılacak fonksiyon
+//   const handleFileUpload = (event) => {
+//     const file = event.target.files[0];
+//     if (file) {
+//       setMessages((prev) => ({
+//         ...prev,
+//         [selectedTicket.id]: [
+//           ...(prev[selectedTicket.id] || []),
+//           {
+//             text: `📎 ${file.name} (${file.type || "Unknown Type"})`,
+//             sender: "You",
+//             time: new Date().toLocaleTimeString(),
+//           },
+//         ],
+//       }));
+//     }
+//   }; 
+
+  // 📎 Dosya gönderme ve önizleme
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      const fileURL = URL.createObjectURL(file);
+      const fileType = file.type.startsWith("image/") ? "image" : "file"; // Resim mi, yoksa başka dosya mı?
+  
       setMessages((prev) => ({
         ...prev,
         [selectedTicket.id]: [
           ...(prev[selectedTicket.id] || []),
           {
-            text: `📎 ${file.name} (${file.type || "Unknown Type"})`,
+            text: file.name,
             sender: "You",
             time: new Date().toLocaleTimeString(),
+            fileType,
+            fileURL,
           },
         ],
       }));
     }
-  }; 
+  };
+  
 
   // Filtreleme fonksiyonu
   const filteredTickets = ticketData[activeTab].filter(ticket => 
@@ -210,6 +236,52 @@ export default function List() {
     setIsDeleteModalOpen(false);
     toast.success("Ticket deleted successfully!", { position: "top-right" });
   };
+
+
+  const descriptionInputRef = useRef(null);
+const messageInputRef = useRef(null);
+
+  // Resim cmd v
+useEffect(() => {
+  const handlePaste = (event) => {
+    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    for (const item of items) {
+      if (item.kind === "file" && item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        const fileURL = URL.createObjectURL(file);
+
+        // 🏷 Eğer "Add Ticket" modalı açıksa ve description alanı focus'taysa
+        if (isModalOpen && document.activeElement === descriptionInputRef.current) {
+          setNewTicket((prev) => ({
+            ...prev,
+            description: prev.description + "\n[Attached Image]",
+            attachedImage: fileURL, // Yeni eklenen alan, resmi tutacak
+          }));
+        }
+        // 🏷 Eğer mesaj yazma alanı focus'taysa
+        else if (selectedTicket && document.activeElement === messageInputRef.current) {
+          setMessages((prev) => ({
+            ...prev,
+            [selectedTicket.id]: [
+              ...(prev[selectedTicket.id] || []),
+              {
+                text: "Pasted Image",
+                sender: "You",
+                time: new Date().toLocaleTimeString(),
+                fileType: "image",
+                fileURL,
+              },
+            ],
+          }));
+        }
+      }
+    }
+  };
+
+  document.addEventListener("paste", handlePaste);
+  return () => document.removeEventListener("paste", handlePaste);
+}, [selectedTicket, isModalOpen]);
+
 
   return (
     <div className="p-6 flex flex-col h-screen">
@@ -267,105 +339,135 @@ export default function List() {
       </div>
 
       
+{/* Modal */}
+<Transition appear show={isModalOpen} as={Fragment}>
+  <Dialog as="div" className="relative z-10" onClose={closeModal}>
+    <Transition.Child
+      as={Fragment}
+      enter="ease-out duration-300"
+      enterFrom="opacity-0 scale-95"
+      enterTo="opacity-100 scale-100"
+      leave="ease-in duration-200"
+      leaveFrom="opacity-100 scale-100"
+      leaveTo="opacity-0 scale-95"
+    >
+      <div className="fixed inset-0 bg-black bg-opacity-30" />
+    </Transition.Child>
 
-      {/* Modal */}
-            <Transition appear show={isModalOpen} as={Fragment}>
-              <Dialog as="div" className="relative z-10" onClose={closeModal}>
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95"
+    <div className="fixed inset-0 flex items-center justify-center">
+      <Dialog.Panel className="bg-white rounded-lg shadow-xl p-6 w-[600px] max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center">
+          <Dialog.Title className="text-xl font-semibold">Add New Ticket</Dialog.Title>
+          <button onClick={closeModal} className="text-gray-500 hover:text-red-500">
+            <FaTimes />
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          {/* Sol Alan */}
+          <div>
+            <label className="block text-sm font-semibold">Title</label>
+            <input
+              type="text"
+              className="w-full border rounded px-3 py-2 mt-1"
+              value={newTicket.title}
+              onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
+            />
+
+            <label className="block text-sm font-semibold mt-3">Description</label>
+            <textarea
+              ref={descriptionInputRef}
+              className="w-full border rounded px-3 py-2 mt-1 h-62 resize-none"
+              value={newTicket.description}
+              onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+            ></textarea>
+
+            
+          </div>
+
+          {/* Sağ Alan */}
+          <div>
+          <label className="block text-sm font-semibold mt-3">Assigned To</label>
+            <select
+              className="w-full border rounded px-3 py-2 mt-1"
+              value={newTicket.assignedTo}
+              onChange={(e) => setNewTicket({ ...newTicket, assignedTo: e.target.value })}
+            >
+              {users.map((user) => (
+                <option key={user} value={user}>
+                  {user}
+                </option>
+              ))}
+            </select>
+
+            <label className="block text-sm font-semibold mt-3">Category</label>
+            <select
+              className="w-full border rounded px-3 py-2 mt-1"
+              value={newTicket.category || ""}
+              onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
+            >
+              <option value="">Select a category</option>
+              <option value="Complimenten">Complimenten</option>
+              <option value="Comentaar">Comentaar</option>
+              <option value="Vraag">Vraag</option>
+              <option value="Klacht">Klacht</option>
+              <option value="Melding">Melding</option>
+              <option value="Extra Werk">Extra Werk</option>
+              <option value="Ongegrond">Ongegrond</option>
+            </select>
+            <label className="block text-sm font-semibold">Date</label>
+            <input type="text" className="w-full border rounded px-3 py-2 mt-1 bg-gray-100" value={newTicket.date} disabled />
+
+            <label className="block text-sm font-semibold mt-3">Upload File</label>
+            <input
+              type="file"
+              className="w-full mt-1"
+              onChange={(e) => setNewTicket({ ...newTicket, file: e.target.files[0] })}
+            />
+
+            <label className="block text-sm font-semibold mt-3">Location</label>
+            <select
+              className="w-full border rounded px-3 py-2 mt-1"
+              value={newTicket.location}
+              onChange={(e) => setNewTicket({ ...newTicket, location: e.target.value })}
+            >
+              {locations.map((loc) => (
+                <option key={loc} value={loc}>
+                  {loc}
+                </option>
+              ))}
+            </select>
+
+            {/* Eğer resim varsa Thumbnail Göster + "X" Butonu */}
+            {newTicket.attachedImage && (
+              <div className="relative mt-6 flex justify-center">
+                <img
+                  src={newTicket.attachedImage}
+                  alt="Attached"
+                  className="w-32 h-auto rounded-lg cursor-pointer hover:opacity-80 border"
+                  onClick={() => setPreviewImage(newTicket.attachedImage)}
+                />
+                {/* ❌ X Butonu (Resmi Silmek için) */}
+                <button
+                  className="absolute top-[-10px] right-[60px] bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600"
+                  onClick={() => setNewTicket({ ...newTicket, attachedImage: null })}
                 >
-                  <div className="fixed inset-0 bg-black bg-opacity-30" />
-                </Transition.Child>
-      
-                <div className="fixed inset-0 flex items-center justify-center">
-                  <Dialog.Panel className="bg-white rounded-lg shadow-xl p-6 w-96">
-                    <div className="flex justify-between items-center">
-                      <Dialog.Title className="text-xl font-semibold">Add New Ticket</Dialog.Title>
-                      <button onClick={closeModal} className="text-gray-500 hover:text-red-500">
-                        <FaTimes />
-                      </button>
-                    </div>
-      
-                    <div className="mt-4">
-                      <label className="block text-sm font-semibold">Title</label>
-                      <input
-                        type="text"
-                        className="w-full border rounded px-3 py-2 mt-1"
-                        value={newTicket.title}
-                        onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
-                      />
-      
-                      <label className="block text-sm font-semibold mt-3">Description</label>
-                      <textarea
-                        className="w-full border rounded px-3 py-2 mt-1"
-                        rows="3"
-                        value={newTicket.description}
-                        onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
-                      ></textarea>
-      
-                      <label className="block text-sm font-semibold mt-3">Assigned To</label>
-                      <select
-                        className="w-full border rounded px-3 py-2 mt-1"
-                        value={newTicket.assignedTo}
-                        onChange={(e) => setNewTicket({ ...newTicket, assignedTo: e.target.value })}
-                      >
-                        {users.map((user) => (
-                          <option key={user} value={user}>
-                            {user}
-                          </option>
-                        ))}
-                      </select>
+                  <FaTimes />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
-                      {/* 🎯 **Kategori Seçme Alanı** */}
-                        <label className="block text-sm font-semibold mt-3">Category</label>
-                        <select
-                            className="w-full border rounded px-3 py-2 mt-1"
-                            value={newTicket.category || ""}
-                            onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
-                        >
-                            <option value="">Select a category</option>
-                            <option value="Complimenten">Complimenten</option>
-                            <option value="Comentaar">Comentaar</option>
-                            <option value="Vraag">Vraag</option>
-                            <option value="Klacht">Klacht</option>
-                            <option value="Melding">Melding</option>
-                            <option value="Extra Werk">Extra Werk</option>
-                            <option value="Ongegrond">Ongegrond</option>
-                        </select>
-      
-                      <label className="block text-sm font-semibold mt-3">Date</label>
-                      <input type="text" className="w-full border rounded px-3 py-2 mt-1 bg-gray-100" value={newTicket.date} disabled />
-      
-                      <label className="block text-sm font-semibold mt-3">Upload File</label>
-                      <input type="file" className="w-full mt-1" onChange={(e) => setNewTicket({ ...newTicket, file: e.target.files[0] })} />
-      
-                      <label className="block text-sm font-semibold mt-3">Location</label>
-                      <select
-                        className="w-full border rounded px-3 py-2 mt-1"
-                        value={newTicket.location}
-                        onChange={(e) => setNewTicket({ ...newTicket, location: e.target.value })}
-                      >
-                        {locations.map((loc) => (
-                          <option key={loc} value={loc}>
-                            {loc}
-                          </option>
-                        ))}
-                      </select>
-      
-                      <button onClick={addTicket} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-700">
-                        Add Ticket
-                      </button>
-                    </div>
-                  </Dialog.Panel>
-                </div>
-              </Dialog>
-            </Transition>
+        <button onClick={addTicket} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-700">
+          Add Ticket
+        </button>
+      </Dialog.Panel>
+    </div>
+  </Dialog>
+</Transition>
+
+
 
       {/* İçerik Alanı (Sol + Sağ) */}
         <div className="flex flex-grow bg-white shadow-lg rounded-lg overflow-hidden h-full mb-13">
@@ -607,80 +709,142 @@ export default function List() {
 
 
                 {/* Atanan Kişi */}
-                <p className="text-gray-500 mt-2 flex items-center">
+                {/* <p className="text-gray-500 mt-2 flex items-center">
                 <FaUser className="mr-2 text-blue-500" />
                 {selectedTicket.assignedTo}
-                </p>
+                </p> */}
 
                 {/* Konum */}
-                <p className="text-gray-500 mt-2 flex items-center">
+                {/* <p className="text-gray-500 mt-2 flex items-center">
                 <FaMapMarkerAlt className="mr-2 text-green-500" />
                 {selectedTicket.location}
-                </p>
+                </p> */}
 
                 {/* Tarih */}
-                <p className="text-gray-500 mt-2 flex items-center">
+                {/* <p className="text-gray-500 mt-2 flex items-center">
                 <FaCalendarAlt className="mr-2 text-red-500" />
                 {selectedTicket.date}
-                </p>
+                </p> */}
 
                 {/* Created By */}
-                <p className="text-gray-500 mt-2 flex items-center text-xs">
+                {/* <p className="text-gray-500 mt-2 flex items-center text-xs">
                 <FaUser className="mr-2 text-gray-500" />
                 <span className="font-semibold">Created By: </span> {selectedTicket.createdBy}
-                </p>
+                </p> */}
 
                 {/* Bildirim Türü */}
-                <div className={`mt-3 text-xs font-semibold px-3 py-1 rounded-full inline-block ${notificationTypes[selectedTicket.type]}`}>
+                {/* <div className={`mt-3 text-xs font-semibold px-3 py-1 rounded-full inline-block ${notificationTypes[selectedTicket.type]}`}>
                 {selectedTicket.type}
-                </div>
+                </div> */}
 
                 {/* Açıklama */}
-                <p className="mt-4 text-gray-700">{selectedTicket.description}</p>
-            </div>
+                <p className="mt-4 text-gray-700 whitespace-pre-line">{selectedTicket.description}</p>
+                {/* Eğer ticket içinde resim varsa göster */}
+{selectedTicket.attachedImage && (
+  <img
+    src={selectedTicket.attachedImage}
+    alt="Attached Image"
+    className="mt-4 w-40 h-auto rounded-lg shadow cursor-pointer hover:opacity-80"
+    onClick={() => setPreviewImage(selectedTicket.attachedImage)}
+  />
+)}
+
+{/* 🏷 Büyük Resim Önizleme Modali */}
+{previewImage && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-[500px] max-w-full relative">
+      <button
+        className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
+        onClick={() => setPreviewImage(null)}
+      >
+        <FaTimes />
+      </button>
+      <img src={previewImage} alt="Preview" className="w-full h-auto rounded-lg" />
+    </div>
+  </div>
+)}
+                
+                </div>
 
             {/* Messages Bölümü */}
-                          <div className="mt-6 flex-grow flex flex-col bg-gray-100 rounded-lg p-4 overflow-y-auto">
-                            <h3 className="text-lg font-semibold mb-2">Messages</h3>
-                            <div className="flex flex-col space-y-2">
-                            {(messages[selectedTicket.id] || []).map((msg, index) => (
-                                <div
-                                    key={index}
-                                    className={`p-2 rounded-lg max-w-xs ${
-                                    msg.sender === "You" ? "bg-blue-500 text-white self-end" : "bg-gray-300 text-black self-start"
-                                    }`}
-                                >
-                                    {/* 🏷 Mesaj Sahibi (Kimden Geldiğini Gösteriyoruz) */}
-                                    <p className="text-xs font-semibold opacity-80 mb-1">
-                                    {msg.sender === "You" ? "You" : msg.sender}
-                                    </p>
-                                  <p>{msg.text}</p>
-                                  <small className="text-xs">{msg.time}</small>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-            
-                          {/* Mesaj Yazma Alanı (Sabit Duracak) */}
-                        <div className="border-t flex items-center bg-white p-3">
-                          <button className="text-gray-500 p-2 hover:text-green-500" onClick={() => fileInputRef.current.click()}>
-                                <FaPaperclip />
-                            </button>
+<div className="mt-6 flex-grow flex flex-col bg-gray-100 rounded-lg p-4 overflow-y-auto">
+  <h3 className="text-lg font-semibold mb-2">Messages</h3>
+  <div className="flex flex-col space-y-2">
+    {(messages[selectedTicket.id] || []).map((msg, index) => (
+      <div
+        key={index}
+        className={`p-2 rounded-lg max-w-xs ${
+          msg.sender === "You" ? "bg-blue-500 text-white self-end" : "bg-gray-300 text-black self-start"
+        }`}
+      >
+        {/* 🏷 Mesaj Sahibi */}
+        <p className="text-xs font-semibold opacity-80 mb-1">
+          {msg.sender === "You" ? "You" : msg.sender}
+        </p>
 
-                            {/* Dosya seçme inputu - Gizli */}
-                            <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+        {/* 📂 Dosya Mesajı */}
+        {msg.fileType === "image" ? (
+          <img
+            src={msg.fileURL}
+            alt="Sent file"
+            className="w-32 h-32 object-cover rounded-lg cursor-pointer hover:opacity-80"
+            onClick={() => setPreviewImage(msg.fileURL)}
+          />
+        ) : msg.fileType === "file" ? (
+          <a
+            href={msg.fileURL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-200 underline flex items-center"
+          >
+            <FaPaperclip className="mr-1" />
+            {msg.text}
+          </a>
+        ) : (
+          <p>{msg.text}</p>
+        )}
 
-                            <input
-                              type="text"
-                              className="flex-grow px-3 py-2 border rounded-lg focus:outline-none"
-                              placeholder="Type a message..."
-                              value={newMessage}
-                              onChange={(e) => setNewMessage(e.target.value)}
-                            />
-                            <button className="text-blue-500 p-2 hover:text-blue-700" onClick={sendMessage}>
-                              <FaPaperPlane />
-                            </button>
-                          </div>
+        <small className="text-xs">{msg.time}</small>
+      </div>
+    ))}
+  </div>
+</div>
+{/* 🏷 Büyük Resim Önizleme Modali */}
+{previewImage && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-[500px] max-w-full relative">
+      <button
+        className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
+        onClick={() => setPreviewImage(null)}
+      >
+        <FaTimes />
+      </button>
+      <img src={previewImage} alt="Preview" className="w-full h-auto rounded-lg" />
+    </div>
+  </div>
+)}
+{/* Mesaj Yazma Alanı (Sabit Duracak) */}
+<div className="border-t flex items-center bg-white p-3">
+  <button className="text-gray-500 p-2 hover:text-green-500" onClick={() => fileInputRef.current.click()}>
+    <FaPaperclip />
+  </button>
+
+  {/* Dosya seçme inputu - Gizli */}
+  <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+
+  <input
+    ref={messageInputRef} // Ref ekledik
+    type="text"
+    className="flex-grow px-3 py-2 border rounded-lg focus:outline-none"
+    placeholder="Type a message..."
+    value={newMessage}
+    onChange={(e) => setNewMessage(e.target.value)}
+  />
+  <button className="text-blue-500 p-2 hover:text-blue-700" onClick={sendMessage}>
+    <FaPaperPlane />
+  </button>
+</div>
+
                         </>
             
           ) : (

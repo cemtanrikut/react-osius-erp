@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { FaBars, FaTimes, FaHome, FaTicketAlt, FaSignOutAlt, FaUserCircle, FaUsers, FaBuilding } from "react-icons/fa";
+import { FaBars, FaTimes, FaHome, FaTicketAlt, FaSignOutAlt, FaUserCircle, FaUsers, FaBuilding, FaUsersCog } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 export default function Sidebar({ setSidebarWidth }) {
@@ -113,6 +113,23 @@ export default function Sidebar({ setSidebarWidth }) {
           >
             Buildings
           </span>
+        </NavLink>
+
+        {/* ✅ Workers Linki */}
+        <NavLink
+        to="/dashboard/workers"
+        className={({ isActive }) =>
+            `relative flex items-center p-3 rounded-lg w-full transition-all ${
+            isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
+            }`
+        }
+        >
+            <FaUsersCog className="text-xl left-3 absolute transform -translate-y-1/2" />
+            <span
+                className={`transition-all duration-300 ${isOpen ? "ml-10 opacity-100" : "opacity-0"}`}
+            >
+                Workers
+            </span>
         </NavLink>
 
       </nav>
