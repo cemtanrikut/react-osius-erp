@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 export default function Sidebar({ setSidebarWidth }) {
   const [isOpen, setIsOpen] = useState(true);
   const navigate = useNavigate();
-  const user = { name: "Cem Tanrikut" };
+  const user = { name: "Admin" };
 
   useEffect(() => {
     if (setSidebarWidth) {
