@@ -16,16 +16,22 @@ export default function Sidebar({ setSidebarWidth }) {
 
   return (
     <div
-      className="flex flex-col bg-blue-700 text-white h-screen p-5 transition-all duration-300 relative"
-      style={{ width: isOpen ? "256px" : "64px" }}
+    className="flex flex-col bg-gray-700 text-white h-full min-h-screen p-3 transition-all duration-300"
+    style={{ width: isOpen ? "200px" : "64px" }}
     >
-      {/* Menü Aç/Kapat Butonu */}
+    <div className="p-2 flex items-center justify-between">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="text-white mb-5 text-2xl flex items-center"
       >
         {isOpen ? <FaTimes /> : <FaBars />}
       </button>
+        <div className="flex items-center gap-1 mr-5 mb-3">
+          {isOpen && <img src="/osius_logo.png" alt="Osius Logo" className="h-10" />}
+        </div>
+      {/* Menü Aç/Kapat Butonu */}
+      
+      </div>
 
       {/* Menü İçeriği */}
       <nav className="flex flex-col gap-2 flex-grow">
@@ -35,7 +41,7 @@ export default function Sidebar({ setSidebarWidth }) {
           end
           className={({ isActive }) =>
             `relative flex items-center p-3 rounded-lg w-full transition-all ${
-              isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
+              isActive ? "bg-red-700 text-white font-bold" : "hover:bg-red-900"
             }`
           }
         >
@@ -69,7 +75,7 @@ export default function Sidebar({ setSidebarWidth }) {
             to="/dashboard/list"
             className={({ isActive }) =>
                 `relative flex items-center p-3 rounded-lg w-full transition-all ${
-                isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
+                isActive ? "bg-red-700 text-white font-bold" : "hover:bg-red-900"
                 }`
             }
         >
@@ -86,7 +92,7 @@ export default function Sidebar({ setSidebarWidth }) {
           to="/dashboard/customers"
           className={({ isActive }) =>
             `relative flex items-center p-3 rounded-lg w-full transition-all ${
-              isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
+              isActive ? "bg-red-700 text-white font-bold" : "hover:bg-red-900"
             }`
           }
         >
@@ -103,7 +109,7 @@ export default function Sidebar({ setSidebarWidth }) {
           to="/dashboard/buildings"
           className={({ isActive }) =>
             `relative flex items-center p-3 rounded-lg w-full transition-all ${
-              isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
+              isActive ? "bg-red-700 text-white font-bold" : "hover:bg-red-900"
             }`
           }
         >
@@ -120,7 +126,7 @@ export default function Sidebar({ setSidebarWidth }) {
         to="/dashboard/workers"
         className={({ isActive }) =>
             `relative flex items-center p-3 rounded-lg w-full transition-all ${
-            isActive ? "bg-blue-600 text-white font-bold" : "hover:bg-blue-800"
+            isActive ? "bg-red-700 text-white font-bold" : "hover:bg-red-900"
             }`
         }
         >
@@ -137,7 +143,7 @@ export default function Sidebar({ setSidebarWidth }) {
       {/* Kullanıcı Bilgisi - Logout'un Üstünde */}
       <div className="mb-4">
         <button
-          className="relative flex items-center p-3 rounded-lg w-full bg-blue-800 hover:bg-blue-500 transition-all"
+          className="relative flex items-center p-3 rounded-lg w-full bg-gray-800 hover:bg-gray-500 transition-all"
         >
           <FaUserCircle className="text-xl absolute left-3 transform -translate-y-1/2" />
           <span

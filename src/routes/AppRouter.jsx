@@ -7,6 +7,7 @@ import List from "../pages/List";
 import Customers from "../pages/Customers";
 import Buildings from "../pages/Buildings";
 import Workers from "../pages/Workers";
+import CustomerDetail from "../pages/CustomerDetail";
 
 
 export default function AppRouter() {
@@ -24,6 +25,7 @@ export default function AppRouter() {
           <Route path="customers" element={<Customers />} />
           <Route path="buildings" element={<Buildings />} />
           <Route path="workers" element={<Workers />} />
+          <Route path="customers/:id" element={<CustomerDetail />} />
         </Route>
 
         {/* Bilinmeyen sayfalarda Login'e yönlendir */}

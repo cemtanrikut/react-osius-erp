@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     FaFilter,
     FaPlus,
@@ -46,6 +47,7 @@ const generateCustomers = () => {
 };
 
 export default function Customers() {
+    const navigate = useNavigate(); // 🚀 Yönlendirme için
   const [customers, setCustomers] = useState(generateCustomers());
   const [filteredCustomers, setFilteredCustomers] = useState(customers);
   const [searchId, setSearchId] = useState("");
@@ -361,7 +363,11 @@ export default function Customers() {
           {/* Tablo İçeriği */}
           <tbody>
             {currentCustomers.map((customer) => (
-              <tr key={customer.id} className="hover:bg-gray-50">
+              <tr 
+                key={customer.id} 
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => navigate(`/dashboard/customers/${customer.id}`, { state: { customer } })} // 🔥 Müşteri bilgilerini state olarak gönderiyoruz
+                >
                 <td className="p-3 border-b">{customer.id}</td>
                 <td className="p-3 border-b">{customer.name}</td>
                 <td className="p-3 border-b">{customer.phone}</td>
@@ -379,8 +385,11 @@ export default function Customers() {
                 </td>
                 <td className="p-3 border-b">
                     <button
-                      className="text-blue-500 hover:text-blue-700"
-                      onClick={() => setSelectedCustomer(customer)}
+                    className="text-blue-500 hover:text-blue-700"
+                    onClick={(e) => {
+                        e.stopPropagation(); // 🔹 Tıklamayı satıra iletmemek için
+                        navigate(`/dashboard/customers/${customer.id}`, { state: { customer } });
+                    }}
                     >
                       <FaEye />
                     </button>
