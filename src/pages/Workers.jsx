@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
     FaFilter, FaPlus, FaEye, FaTimes, FaUserCircle, FaPhone, 
     FaEnvelope, FaCheckCircle, FaArrowRight, FaArrowLeft, 
@@ -26,6 +27,7 @@ const generateWorkers = () => {
 };
 
 export default function Workers() {
+    const navigate = useNavigate();
     const [workers, setWorkers] = useState(generateWorkers());
     const [filteredWorkers, setFilteredWorkers] = useState(workers);
     const [searchId, setSearchId] = useState("");
@@ -87,6 +89,7 @@ export default function Workers() {
   return (
     <div className="p-6">
       <Toaster />
+      <h1 className="text-2xl font-bold mb-6">Workers</h1>
       {/* 🎯 Filtreleme Alanı */}
       <div className="bg-white shadow-md rounded-lg p-4 mb-4 flex items-center gap-4">
         <FaFilter className="text-gray-600" />
@@ -154,7 +157,11 @@ export default function Workers() {
           </thead>
           <tbody>
             {currentWorkers.map((worker) => (
-              <tr key={worker.id} className="hover:bg-gray-50">
+                <tr 
+                  key={worker.id} 
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => navigate(`/dashboard/workers/${worker.id}`, { state: { worker } })}
+                >                
                 <td className="p-3 border-b">{worker.id}</td>
                 <td className="p-3 border-b">{worker.name}</td>
                 <td className="p-3 border-b">{worker.phone}</td>
@@ -173,8 +180,10 @@ export default function Workers() {
                 <td className="p-3 border-b">
                   <button
                     className="text-blue-500 hover:text-blue-700"
-                    onClick={() => setSelectedWorker(worker)}
-                  >
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/dashboard/workers/${worker.id}`, { state: { worker } });
+                      }}                  >
                     <FaEye />
                   </button>
                 </td>

@@ -8,6 +8,8 @@ import Customers from "../pages/Customers";
 import Buildings from "../pages/Buildings";
 import Workers from "../pages/Workers";
 import CustomerDetail from "../pages/CustomerDetail";
+import BuildingDetail from "../pages/BuildingDetail";
+import WorkerDetail from "../pages/WorkerDetail";
 
 
 export default function AppRouter() {
@@ -26,6 +28,8 @@ export default function AppRouter() {
           <Route path="buildings" element={<Buildings />} />
           <Route path="workers" element={<Workers />} />
           <Route path="customers/:id" element={<CustomerDetail />} />
+          <Route path="buildings/:id" element={<BuildingDetail />} />
+          <Route path="workers/:id" element={<WorkerDetail />} />
         </Route>
 
         {/* Bilinmeyen sayfalarda Login'e yönlendir */}

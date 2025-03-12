@@ -286,7 +286,7 @@ useEffect(() => {
   return (
     <div className="p-4 flex flex-col h-screen">
         <Toaster /> {/* Toast gösterici */}
-        <h1 className="text-2xl font-bold mb-6">Melding</h1>
+        <h1 className="text-2xl font-bold mb-6">Meldings</h1>
       {/* Üst Sekmeler ve "+ Add Ticket" Butonu */}
       <div className="flex justify-between items-center mb-4">
         {/* Sekmeler */}

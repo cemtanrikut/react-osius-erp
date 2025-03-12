@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
     FaFilter, FaPlus, FaEye, FaTimes, FaHashtag, FaUserCircle, FaPhone, FaHome, 
     FaEnvelope, FaCheckCircle, FaBuilding, FaLocationArrow, FaMapMarkerAlt, FaStickyNote, FaCalculator 
@@ -35,6 +36,7 @@ const generateBuildings = () => {
 };
 
 export default function Buildings() {
+    const navigate = useNavigate();
   const [buildings, setBuildings] = useState(generateBuildings());
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
   const [searchId, setSearchId] = useState("");
@@ -109,6 +111,7 @@ export default function Buildings() {
   return (
     <div className="p-6">
         <Toaster /> {/* 🚀 **Toast Mesajlarını Gösterir** */}
+        <h1 className="text-2xl font-bold mb-6">Buildings</h1>
       {/* 🎯 Filtreleme Alanı */}
         <div className="bg-white shadow-md rounded-lg p-4 mb-4 flex items-center gap-4">
         <FaFilter className="text-gray-600" />
@@ -370,7 +373,11 @@ export default function Buildings() {
           {/* Tablo İçeriği */}
           <tbody>
             {currentBuildings.map((building) => (
-              <tr key={building.id} className="hover:bg-gray-50">
+                <tr 
+                key={building.id} 
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => navigate(`/dashboard/buildings/${building.id}`, { state: { building } })}
+              >                
                 <td className="p-3 border-b">{building.id}</td>
                 <td className="p-3 border-b">{building.name}</td>
                 <td className="p-3 border-b">{building.address}</td>
@@ -393,8 +400,10 @@ export default function Buildings() {
                 <td className="p-3 border-b">
                     <button
                       className="text-blue-500 hover:text-blue-700"
-                      onClick={() => setSelectedBuilding(building)}
-                    >
+                      onClick={(e) => {
+                        e.stopPropagation(); // Satırın tıklanmasını engelleme
+                        navigate(`/dashboard/buildings/${building.id}`, { state: { building } });
+                      }}                    >
                       <FaEye />
                     </button>
                   </td>

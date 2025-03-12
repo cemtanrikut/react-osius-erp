@@ -153,6 +153,7 @@ export default function Customers() {
   return (
     <div className="p-6">
         <Toaster /> {/* 🚀 **Toast Mesajlarını Gösterir** */}
+        <h1 className="text-2xl font-bold mb-6">Customers</h1>
       {/* 🎯 Filtreleme Alanı */}
       <div className="bg-white shadow-md rounded-lg p-4 mb-4 flex items-center gap-4">
         <FaFilter className="text-gray-600" />
