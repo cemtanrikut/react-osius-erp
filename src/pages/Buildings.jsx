@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
     FaFilter, FaPlus, FaEye, FaTimes, FaHashtag, FaUserCircle, FaPhone, FaHome, 
@@ -49,24 +49,27 @@ export default function Buildings() {
   const [searchPostCode, setSearchPostCode] = useState("");
   const [searchPlaats, setSearchPlaats] = useState("");
   const [calculateTypeFilter, setCalculateTypeFilter] = useState("");
-  const [newBuilding, setNewBuilding] = useState({
-    name: "", address: "", houseNo: "", postCode: "", plaats: "", status: "Active", note: "", calculateType: "Fixed"
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Filtreleme Fonksiyonu
-  const filterBuildings = (id, name, postCode, plaats, status, calculateType) => {
+  const filterBuildings = () => {
     let filtered = buildings.filter((building) =>
-      (id ? building.id.includes(id) : true) &&
-      (name ? building.name.toLowerCase().includes(name.toLowerCase()) : true) &&
-      (postCode ? building.postCode.includes(postCode) : true) &&
-      (plaats ? building.plaats === plaats : true) &&
-      (status ? building.status === status : true) &&
-      (calculateType ? building.calculateType === calculateType : true)
+        (searchId ? building.id.toLowerCase().includes(searchId.toLowerCase()) : true) &&
+        (searchName ? building.name.toLowerCase().includes(searchName.toLowerCase()) : true) &&
+        (searchPostCode ? building.postCode.includes(searchPostCode) : true) &&
+        (searchPlaats ? building.plaats.toLowerCase().includes(searchPlaats.toLowerCase()) : true) &&
+        (statusFilter ? building.status === statusFilter : true) &&
+        (calculateTypeFilter ? building.calculateType === calculateTypeFilter : true)
     );
-  
+
     setFilteredBuildings(filtered);
     setCurrentPage(1); // Filtreleme sonrası sayfa 1'e dönsün
-  };
+    };
+
+    // Filtreleme inputlarında değişiklik oldukça çalıştır
+    useEffect(() => {
+        filterBuildings();
+    }, [searchId, searchName, searchPostCode, searchPlaats, statusFilter, calculateTypeFilter]);
+
   
 
   // Clear butonu için fonksiyon
@@ -81,27 +84,28 @@ export default function Buildings() {
     setCalculateTypeFilter("");
   };
 
-  // ✅ **Building Ekleme Fonksiyonu (DÜZELTİLDİ)**
-  const addBuilding = () => {
-    if (!newBuilding.name || !newBuilding.address || !newBuilding.houseNo || !newBuilding.postCode || !newBuilding.plaats) {
-        toast.error("All fields are required!", { position: "top-right" });
-      return;
-    }
+  // 🏗 **Backend'den Bina Verilerini Çekme**
+  useEffect(() => {
+    const fetchBuildings = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch("https://api-osius.up.railway.app/buildings");
+            if (!response.ok) {
+                throw new Error("Failed to fetch buildings");
+            }
+            const data = await response.json();
+            setBuildings(data);
+            setFilteredBuildings(data); // Filtrelenmiş listeyi de başlat
+        } catch (error) {
+            console.error("Error fetching buildings:", error);
+            toast.error("Error fetching buildings!", { position: "top-right" });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    const newId = `B-${buildings.length + 1}`;
-    const newEntry = { id: newId, ...newBuilding };
-
-    setBuildings((prevBuildings) => {
-      const updatedBuildings = [newEntry, ...prevBuildings];
-      setFilteredBuildings(updatedBuildings); // **Filtreli listeyi de güncelle**
-      return updatedBuildings;
-    });
-
-    setNewBuilding({ name: "", address: "", houseNo: "", postCode: "", plaats: "", status: "Active", note: "", calculateType: "Fixed" });
-    setIsAddModalOpen(false); // **Modalı kapat**
-    
-    toast.success("Building added successfully!", { position: "top-right" });
-  };
+    fetchBuildings();
+  }, []);
 
   // Pagination hesaplama
   const indexOfLastBuilding = currentPage * buildingsPerPage;
@@ -225,7 +229,10 @@ export default function Buildings() {
             Clear
         </button>
         <button className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 ml-auto flex items-center"
-            onClick={() => setIsAddModalOpen(true)}>
+            // onClick={() => setIsAddModalOpen(true)}>
+                onClick={() => 
+                    navigate("/dashboard/buildings/add")
+                }>
           <FaPlus className="mr-2" />
           Add Building
         </button>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
     FaFilter, FaPlus, FaEye, FaTimes, FaUserCircle, FaPhone, 
@@ -39,16 +39,40 @@ export default function Workers() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newWorker, setNewWorker] = useState({ name: "", phone: "", email: "", department: "", role: "", startDate: "", status: "Active" });
   
-  // Filtreleme Fonksiyonu
-  const filterWorkers = (id, name, status) => {
+        // 📌 **Backend'den Worker'ları Çekme**
+        useEffect(() => {
+            const fetchWorkers = async () => {
+                try {
+                    const response = await fetch("https://api-osius.up.railway.app/workers"); // Backend URL
+                    if (!response.ok) throw new Error("Failed to fetch workers");
+                    const data = await response.json();
+                    setWorkers(data);
+                    setFilteredWorkers(data);
+                } catch (error) {
+                    console.error("Error fetching workers:", error);
+                    toast.error("Error fetching workers!", { position: "top-right" });
+                }
+            };
+    
+            fetchWorkers();
+        }, []);
+
+// ✅ **Filtreleme Fonksiyonu**
+const filterWorkers = () => {
     let filtered = workers.filter((worker) =>
-      (id ? worker.id.includes(id) : true) &&
-      (name ? worker.name.toLowerCase().includes(name.toLowerCase()) : true) &&
-      (status ? worker.status === status : true)
+        (searchId ? worker.id.toLowerCase().includes(searchId.toLowerCase()) : true) &&
+        (searchName ? worker.name.toLowerCase().includes(searchName.toLowerCase()) : true) &&
+        (statusFilter ? worker.status === statusFilter : true)
     );
+
     setFilteredWorkers(filtered);
     setCurrentPage(1);
-  };
+};
+
+// ✅ **Filtrelemeyi her değişiklikte çalıştır**
+useEffect(() => {
+    filterWorkers();
+}, [searchId, searchName, statusFilter, workers]);
 
   // Filtreleri Temizleme
   const clearFilters = () => {
@@ -132,8 +156,9 @@ export default function Workers() {
         <button 
             className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 ml-auto flex items-center"
             onClick={() => {
-                setIsAddModalOpen(true); // Modalı aç
-                setNewWorker({ name: "", phone: "", email: "", department: "", role: "", startDate: "", status: "Active" }); // Formu sıfırla
+                navigate("/dashboard/workers/add")
+                // setIsAddModalOpen(true); // Modalı aç
+                // setNewWorker({ name: "", phone: "", email: "", department: "", role: "", startDate: "", status: "Active" }); // Formu sıfırla
             }}
             >
             <FaPlus className="mr-2" />

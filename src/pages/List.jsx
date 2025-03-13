@@ -18,24 +18,31 @@ const notificationTypes = {
 // Rastgele atanacak kişiler ve konumlar
 const users = ["Cem Tanrikut", "Ramazan", "Abdullah Soyaslan", "Jony Ive"];
 const locations = ["Amsterdam", "Rotterdam", "Utrecht", "The Hague", "Eindhoven", "Groningen"];
+const locations1 = {
+    Amsterdam: "Amsterdam", 
+    Rotterdam: "Rotterdam", 
+    Utrecht: "Utrecht", 
+    "The Hague": "The Hague", 
+    Eindhoven: "Eindhoven", 
+    Groningen: "Groningen"};
 
 
 const initialTicketData = {
   todo: [
-    { id: "1", code: "T-001", title: "Design Login Page", description: "Create a login page UI", assignedTo: "Cem Tanrikut", date: "28-02-2025", location: "Amsterdam", type: "Vraag", createdBy: "Cem Tanrikut" },
-    { id: "2", code: "T-002", title: "Fix Authentication Bug", description: "Debug login issues", assignedTo: "Ramazan", date: "28-02-2025", location: "Rotterdam", type: "Klacht", createdBy: "Cem Tanrikut" },
-    { id: "3", code: "T-003", title: "Setup Database", description: "Configure MongoDB instance", assignedTo: "Abdullah Soyaslan", date: "27-02-2025", location: "Utrecht", type: "Melding", createdBy: "Cem Tanrikut" },
+    { id: "1", code: "T-001", title: "Design Login Page", description: "Create a login page UI", assignedTo: "Cem Tanrikut", date: "28-02-2025", location: "Amsterdam", type: "Vraag", createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu" },
+    { id: "2", code: "T-002", title: "Fix Authentication Bug", description: "Debug login issues", assignedTo: "Ramazan", date: "28-02-2025", location: "Rotterdam", type: "Klacht", createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu" },
+    { id: "3", code: "T-003", title: "Setup Database", description: "Configure MongoDB instance", assignedTo: "Abdullah Soyaslan", date: "27-02-2025", location: "Utrecht", type: "Melding", createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu" },
   ],
   inProgress: [
-    { id: "4", code: "T-004", title: "API Integration", description: "Connect frontend with backend", assignedTo: "Cem Tanrikut", date: "27-02-2025", location: "The Hague", type: "Extra Werk", createdBy: "Cem Tanrikut" },
-    { id: "5", code: "T-005", title: "Dashboard Charts", description: "Implement analytics dashboard", assignedTo: "Jony Ive", date: "26-02-2025", location: "Eindhoven", type: "Complimenten", createdBy: "Cem Tanrikut" },
-    { id: "6", code: "T-006", title: "Refactor Codebase", description: "Optimize component structure", assignedTo: "Ramazan", date: "25-02-2025", location: "Groningen", type: "Ongegrond", createdBy: "Cem Tanrikut" },
+    { id: "4", code: "T-004", title: "API Integration", description: "Connect frontend with backend", assignedTo: "Cem Tanrikut", date: "27-02-2025", location: "The Hague", type: "Extra Werk", createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu" },
+    { id: "5", code: "T-005", title: "Dashboard Charts", description: "Implement analytics dashboard", assignedTo: "Jony Ive", date: "26-02-2025", location: "Eindhoven", type: "Complimenten", createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu" },
+    { id: "6", code: "T-006", title: "Refactor Codebase", description: "Optimize component structure", assignedTo: "Ramazan", date: "25-02-2025", location: "Groningen", type: "Ongegrond", createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu" },
   ],
   done: [
-    { id: "7", code: "T-007", title: "Create UI Mockups", description: "Design wireframes for app", assignedTo: "Abdullah Soyaslan", date: "24-02-2025", location: "Haarlem", type: "Vraag", createdBy: "Cem Tanrikut" },
-    { id: "8", code: "T-008", title: "Implement Dark Mode", description: "Add theme switching", assignedTo: "Cem Tanrikut", date: "23-02-2025", location: "Leiden", type: "Complimenten", createdBy: "Cem Tanrikut" },
-    { id: "9", code: "T-009", title: "Optimize Queries", description: "Improve database performance", assignedTo: "Jony Ive", date: "22-02-2025", location: "Maastricht", type: "Comentaar", createdBy: "Cem Tanrikut" },
-    { id: "10", code: "T-010", title: "Deploy to Production", description: "Push latest release", assignedTo: "Abdullah Soyaslan", date: "21-02-2025", location: "Delft", type: "Melding", createdBy: "Cem Tanrikut" },
+    { id: "7", code: "T-007", title: "Create UI Mockups", description: "Design wireframes for app", assignedTo: "Abdullah Soyaslan", date: "24-02-2025", location: "Haarlem", type: "Vraag", createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu" },
+    { id: "8", code: "T-008", title: "Implement Dark Mode", description: "Add theme switching", assignedTo: "Cem Tanrikut", date: "23-02-2025", location: "Leiden", type: "Complimenten", createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu" },
+    { id: "9", code: "T-009", title: "Optimize Queries", description: "Improve database performance", assignedTo: "Jony Ive", date: "22-02-2025", location: "Maastricht", type: "Comentaar", createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu" },
+    { id: "10", code: "T-010", title: "Deploy to Production", description: "Push latest release", assignedTo: "Abdullah Soyaslan", date: "21-02-2025", location: "Delft", type: "Melding", createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu" },
   ],
 };
 
@@ -48,6 +55,7 @@ export default function List() {
   const [messages, setMessages] = useState({}); // Her ticket için mesajları saklar
   const [newMessage, setNewMessage] = useState("");
   const [filterAssignedTo, setFilterAssignedTo] = useState("");
+  const [filterBuilding, setFilteredBuilding] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [newTicket, setNewTicket] = useState({
     title: "",
@@ -100,7 +108,7 @@ export default function List() {
     }
 
     const newId = `T-${ticketData.todo.length + ticketData.inProgress.length + ticketData.done.length + 1}`;
-    const ticket = { id: newId, code: newId, createdBy: "Cem Tanrikut", ...newTicket };
+    const ticket = { id: newId, code: newId, createdBy: "Cem Tanrikut", customer: "Ramazan Ugurlu", ...newTicket };
 
     setTicketData((prev) => ({
         ...prev,
@@ -116,6 +124,7 @@ export default function List() {
       location: locations[0],
       file: null,
       createdBy: "Cem Tanrikut",
+      customer: "Ramazan Ugurlu",
     });
     closeModal();
   };
@@ -201,7 +210,8 @@ export default function List() {
   // Filtreleme fonksiyonu
   const filteredTickets = ticketData[activeTab].filter(ticket => 
     (filterAssignedTo ? ticket.assignedTo === filterAssignedTo : true) &&
-    (filterCategory ? ticket.type === filterCategory : true)
+    (filterCategory ? ticket.type === filterCategory : true) &&
+    (filterBuilding ? ticket.location === filterBuilding : true)
   );
 
   // ✅ **Ticket Güncelleme Fonksiyonu**
@@ -286,7 +296,7 @@ useEffect(() => {
   return (
     <div className="p-4 flex flex-col h-screen">
         <Toaster /> {/* Toast gösterici */}
-        <h1 className="text-2xl font-bold mb-6">Meldings</h1>
+        <h1 className="text-2xl font-bold mb-6">Meldingen</h1>
       {/* Üst Sekmeler ve "+ Add Ticket" Butonu */}
       <div className="flex justify-between items-center mb-4">
         {/* Sekmeler */}
@@ -326,7 +336,15 @@ useEffect(() => {
                 <option value="">Filter by Category</option>
                 {Object.keys(notificationTypes).map(category => <option key={category} value={category}>{category}</option>)}
               </select>
-              <button className="bg-gray-500 text-white px-3 py-2 rounded-lg" onClick={() => { setFilterAssignedTo(""); setFilterCategory(""); }}>Clear</button>
+              <select className="border px-3 py-2 rounded-lg" value={filterAssignedTo} onChange={e => setFilterAssignedTo(e.target.value)}>
+                <option value="">Filter by Customer</option>
+                {users.map(user => <option key={user} value={user}>{user}</option>)}
+              </select>
+              <select className="border px-3 py-2 rounded-lg" value={filterBuilding} onChange={e => setFilteredBuilding(e.target.value)}>
+                <option value="">Filter by Building</option>
+                {Object.keys(locations1).map(location => <option key={location} value={location}>{location}</option>)}                
+                </select>
+              <button className="bg-gray-500 text-white px-3 py-2 rounded-lg" onClick={() => { setFilterAssignedTo(""); setFilterCategory(""); setFilteredBuilding(""); }}>Clear</button>
             </div>
 
         {/* "+ Add Ticket" Butonu */}
@@ -477,6 +495,7 @@ useEffect(() => {
              <div className="w-1/3 bg-gray-50 overflow-y-auto h-full p-4">
              {ticketData[activeTab]
                 .filter((ticket) => !filterAssignedTo || ticket.assignedTo === filterAssignedTo)
+                .filter((ticket) => !filterBuilding || ticket.building === filterBuilding)
                 .filter((ticket) => !filterCategory || ticket.type === filterCategory)
                 .map((ticket) => (
                   <div
@@ -499,26 +518,31 @@ useEffect(() => {
                     <p className="text-sm text-gray-600 mt-1 line-clamp-2">{ticket.description}</p>
       
                     {/* Konum, Kişi ve Tarih */}
-                    <div className="flex justify-between text-gray-600 text-xs mt-3">
+                    <div className="flex justify-between text-gray-600 text-xs mt-4">
                       <div className="flex items-center">
                         <FaMapMarkerAlt className="mr-1 text-green-500" />
                         <span>{ticket.location}</span>
                       </div>
                       <div className="flex items-center">
                         <FaUser className="mr-1 text-blue-500" />
-                        <span>{ticket.assignedTo}</span>
+                        <span>Customer: {ticket.assignedTo}</span>
                       </div>
                       <div className="flex items-center">
                         <FaCalendarAlt className="mr-1 text-red-500" />
                         <span>{ticket.date}</span>
                       </div>
                     </div>
-
+                    {/* Assigned To */}
+                    <p className="text-gray-500 mt-2 flex items-center text-xs">
+                    <FaUser className="mr-2 text-blue-500" />
+                    <span className="font-semibold">Assigned to: </span> {ticket.assignedTo}
+                    </p>
                     {/* Created By */}
                     <p className="text-gray-500 mt-2 flex items-center text-xs">
                     <FaUser className="mr-2 text-gray-500" />
                     <span className="font-semibold">Created by: </span> {ticket.createdBy}
                     </p>
+                    
 
       
                     {/* Bildirim Türü */}

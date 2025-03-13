@@ -10,6 +10,9 @@ import Workers from "../pages/Workers";
 import CustomerDetail from "../pages/CustomerDetail";
 import BuildingDetail from "../pages/BuildingDetail";
 import WorkerDetail from "../pages/WorkerDetail";
+import WorkerAdd from "../pages/WorkerAdd";
+import BuildingAdd from "../pages/BuildingAdd";
+import CustomerAdd from "../pages/CustomerAdd";
 
 
 export default function AppRouter() {
@@ -30,6 +33,9 @@ export default function AppRouter() {
           <Route path="customers/:id" element={<CustomerDetail />} />
           <Route path="buildings/:id" element={<BuildingDetail />} />
           <Route path="workers/:id" element={<WorkerDetail />} />
+          <Route path="workers/add" element={<WorkerAdd />} />
+          <Route path="buildings/add" element={<BuildingAdd />} />
+          <Route path="customers/add" element={<CustomerAdd />} />
         </Route>
 
         {/* Bilinmeyen sayfalarda Login'e yönlendir */}
