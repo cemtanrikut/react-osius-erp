@@ -445,21 +445,28 @@ export default function List() {
 
     // 📌 **WebSocket Bağlantısını Kur**
     useEffect(() => {
-        let socket = new WebSocket("ws://https://api-osius.up.railway.app/ws");
-    
+        // let socket = new WebSocket("ws://https://api-osius.up.railway.app/ws");
+        // ✅ **Prod vs. Local ortamı tespit et**
+        const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+        const wsHost = window.location.hostname === "localhost"
+            ? "localhost:8080/ws" // 🛠 **Local ortam**
+            : "api-osius.up.railway.app/ws"; // 🌍 **Prod ortam**
+
+        const socket = new WebSocket(`${wsProtocol}://${wsHost}`);
+
         socket.onopen = () => {
             console.log("✅ WebSocket bağlantısı kuruldu!");
             setWs(socket);
         };
-    
+
         socket.onmessage = (event) => {
             const receivedMessage = JSON.parse(event.data);
             console.log("📩 Gelen WebSocket Mesajı:", receivedMessage);
-    
-             // 📌 **Gelen mesajın zaten var olup olmadığını kontrol et**
-             setMessages((prevMessages) => {
+
+            // 📌 **Gelen mesajın zaten var olup olmadığını kontrol et**
+            setMessages((prevMessages) => {
                 const existingMessages = prevMessages[receivedMessage.ticket_id] || [];
-                
+
                 // 🎯 Eğer mesaj zaten varsa, tekrar ekleme
                 if (existingMessages.some(msg => msg.created_at === receivedMessage.created_at)) {
                     return prevMessages;
@@ -471,24 +478,24 @@ export default function List() {
                 };
             });
         };
-    
+
         socket.onerror = (error) => {
             console.error("❌ WebSocket Hatası:", error);
         };
-    
+
         socket.onclose = () => {
             console.log("❌ WebSocket bağlantısı kapatıldı. Yeniden bağlanıyor...");
             setTimeout(() => {
                 setWs(new WebSocket("ws://https://api-osius.up.railway.app/ws"));
             }, 3000);
         };
-        
-    
+
+
         return () => {
             socket.close();
         };
     }, []);
-    
+
 
 
 
@@ -604,8 +611,8 @@ export default function List() {
                                 key={ticket.ticketId}
                                 onClick={() => setSelectedTicketId(ticket.ticketId)} // 🔥 **ID üzerinden seçim yap**
                                 className={`p-4 mb-2 rounded-lg cursor-pointer shadow-md transition-all ${selectedTicketId === ticket.ticketId
-                                        ? "bg-blue-200 border-l-4 border-blue-500"
-                                        : "bg-white hover:bg-gray-100"
+                                    ? "bg-blue-200 border-l-4 border-blue-500"
+                                    : "bg-white hover:bg-gray-100"
                                     }`}
                             >
                                 {/* Ticket ID */}
@@ -753,9 +760,9 @@ export default function List() {
 
                                 {/* Konum */}
                                 <p className="text-gray-500 mt-2 flex items-center">
-                <FaMapMarkerAlt className="mr-2 text-green-500" />
-                {selectedTicket.building}
-                </p>
+                                    <FaMapMarkerAlt className="mr-2 text-green-500" />
+                                    {selectedTicket.building}
+                                </p>
 
                                 {/* Tarih */}
                                 {/* <p className="text-gray-500 mt-2 flex items-center">
@@ -765,9 +772,9 @@ export default function List() {
 
                                 {/* Created By */}
                                 <p className="text-gray-500 mt-2 flex items-center text-xs">
-                <FaUser className="mr-2 text-gray-500" />
-                <span className="font-semibold">Created By: </span> {selectedTicket.createdBy}
-                </p>
+                                    <FaUser className="mr-2 text-gray-500" />
+                                    <span className="font-semibold">Created By: </span> {selectedTicket.createdBy}
+                                </p>
 
                                 {/* Bildirim Türü */}
                                 {/* <div className={`mt-3 text-xs font-semibold px-3 py-1 rounded-full inline-block ${notificationTypes[selectedTicket.type]}`}>
