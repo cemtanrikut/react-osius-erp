@@ -579,6 +579,7 @@ export default function List() {
                                 building: "",
                                 file: null,
                                 attachedImage: null,
+                                created_by: localStorage.getItem("name") || "Unknown", // 👈 **Oturum Açan Kişinin Adı**
                             }
                         }
                     })}
@@ -751,10 +752,10 @@ export default function List() {
                 </p> */}
 
                                 {/* Konum */}
-                                {/* <p className="text-gray-500 mt-2 flex items-center">
+                                <p className="text-gray-500 mt-2 flex items-center">
                 <FaMapMarkerAlt className="mr-2 text-green-500" />
-                {selectedTicket.location}
-                </p> */}
+                {selectedTicket.building}
+                </p>
 
                                 {/* Tarih */}
                                 {/* <p className="text-gray-500 mt-2 flex items-center">
@@ -763,10 +764,10 @@ export default function List() {
                 </p> */}
 
                                 {/* Created By */}
-                                {/* <p className="text-gray-500 mt-2 flex items-center text-xs">
+                                <p className="text-gray-500 mt-2 flex items-center text-xs">
                 <FaUser className="mr-2 text-gray-500" />
                 <span className="font-semibold">Created By: </span> {selectedTicket.createdBy}
-                </p> */}
+                </p>
 
                                 {/* Bildirim Türü */}
                                 {/* <div className={`mt-3 text-xs font-semibold px-3 py-1 rounded-full inline-block ${notificationTypes[selectedTicket.type]}`}>

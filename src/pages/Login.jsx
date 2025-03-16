@@ -17,6 +17,7 @@ export default function Login() {
         if (email === "admin@osius.nl" && password === "admin") {
             // localStorage.setItem("token", "dummy_admin_token");
             localStorage.setItem("userType", "admin");
+            localStorage.setItem("name", "Admin");
             navigate("/dashboard");
             return;
         }
@@ -38,6 +39,8 @@ export default function Login() {
             // // 📌 **JWT Token ve Kullanıcı Tipini Kaydet**
             // localStorage.setItem("token", data.token);
             localStorage.setItem("userType", data.userType);
+            localStorage.setItem("name", data.name);  // 👈 **Kullanıcı Adını Kaydediyoruz**
+
 
             // 📌 **Başarılı giriş sonrası yönlendirme**
             navigate("/dashboard");
