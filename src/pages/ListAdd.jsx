@@ -144,6 +144,7 @@ export default function ListAdd() {
                     date: newTicket.date,
                     status: "ToDo", // Varsayılan olarak yeni eklenen ticket "ToDo" olacak
                     creatorId: "1", // ✅ Geçici olarak user ID sabit, ileride dinamik yapılacak
+                    createdBy: "Admin", // gecici olarak admin
                 }),
             });
 
