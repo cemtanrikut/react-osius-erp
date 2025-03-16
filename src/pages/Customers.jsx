@@ -108,7 +108,7 @@ export default function Customers() {
     useEffect(() => {
         const fetchCustomers = async () => {
             try {
-                const response = await fetch("http://localhost:8080/customers"); // Backend API'si
+                const response = await fetch("https://api-osius.up.railway.app/customers"); // Backend API'si
                 if (!response.ok) throw new Error("Failed to fetch customers");
 
                 const data = await response.json();

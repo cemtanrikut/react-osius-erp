@@ -43,9 +43,9 @@ export default function ListAdd() {
         const fetchData = async () => {
             try {
                 const [workersResponse, customersResponse, buildingsResponse] = await Promise.all([
-                    fetch("http://localhost:8080/workers"),
-                    fetch("http://localhost:8080/customers"),
-                    fetch("http://localhost:8080/buildings"),
+                    fetch("https://api-osius.up.railway.app/workers"),
+                    fetch("https://api-osius.up.railway.app/customers"),
+                    fetch("https://api-osius.up.railway.app/buildings"),
                 ]);
 
                 if (!workersResponse.ok || !customersResponse.ok || !buildingsResponse.ok) {
@@ -131,7 +131,7 @@ export default function ListAdd() {
 
         try {
             // 📌 **Ticket Gönderme**
-            const response = await fetch("http://localhost:8080/tickets", {
+            const response = await fetch("https://api-osius.up.railway.app/tickets", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -157,7 +157,7 @@ export default function ListAdd() {
                     formData.append("files", file.file);
                 });
 
-                const fileUploadRes = await fetch(`http://localhost:8080/tickets/${ticketData.id}/files`, {
+                const fileUploadRes = await fetch(`https://api-osius.up.railway.app/tickets/${ticketData.id}/files`, {
                     method: "POST",
                     body: formData,
                 });

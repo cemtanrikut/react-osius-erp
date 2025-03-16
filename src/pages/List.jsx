@@ -72,7 +72,7 @@ export default function List() {
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await fetch("http://localhost:8080/tickets");
+                const response = await fetch("https://api-osius.up.railway.app/tickets");
                 if (!response.ok) {
                     throw new Error("Failed to fetch tickets");
                 }
@@ -106,7 +106,7 @@ export default function List() {
         try {
             console.log(`Moving Ticket: ${ticket.ticketId} from ${from} to ${to}`); // 🔥 Debug için
 
-            const response = await fetch(`http://localhost:8080/tickets/${ticket.ticketId}`, {
+            const response = await fetch(`https://api-osius.up.railway.app/tickets/${ticket.ticketId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ status: to }),
@@ -342,9 +342,9 @@ export default function List() {
         const fetchCustomersAndBuildings = async () => {
             try {
                 const [customersResponse, buildingsResponse] = await Promise.all([
-                    fetch("http://localhost:8080/workers"),
-                    fetch("http://localhost:8080/customers"),
-                    fetch("http://localhost:8080/buildings"),
+                    fetch("https://api-osius.up.railway.app/workers"),
+                    fetch("https://api-osius.up.railway.app/customers"),
+                    fetch("https://api-osius.up.railway.app/buildings"),
                 ]);
 
                 if (!customersResponse.ok || !buildingsResponse.ok) {
@@ -370,7 +370,7 @@ export default function List() {
         setSelectedTicketId(ticket.ticketId);
 
         try {
-            const response = await fetch(`http://localhost:8080/messages/${ticket.ticketId}`);
+            const response = await fetch(`https://api-osius.up.railway.app/messages/${ticket.ticketId}`);
             if (!response.ok) {
                 throw new Error("Mesajlar yüklenemedi");
             }
@@ -401,7 +401,7 @@ export default function List() {
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await fetch("http://localhost:8080/tickets");
+                const response = await fetch("https://api-osius.up.railway.app/tickets");
                 if (!response.ok) {
                     throw new Error("Failed to fetch tickets");
                 }
@@ -445,7 +445,7 @@ export default function List() {
 
     // 📌 **WebSocket Bağlantısını Kur**
     useEffect(() => {
-        let socket = new WebSocket("ws://localhost:8080/ws");
+        let socket = new WebSocket("ws://https://api-osius.up.railway.app/ws");
     
         socket.onopen = () => {
             console.log("✅ WebSocket bağlantısı kuruldu!");
@@ -479,7 +479,7 @@ export default function List() {
         socket.onclose = () => {
             console.log("❌ WebSocket bağlantısı kapatıldı. Yeniden bağlanıyor...");
             setTimeout(() => {
-                setWs(new WebSocket("ws://localhost:8080/ws"));
+                setWs(new WebSocket("ws://https://api-osius.up.railway.app/ws"));
             }, 3000);
         };
         
