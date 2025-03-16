@@ -5,15 +5,47 @@ export default function Login() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setError("");
 
-        // Örnek giriş kontrolü
+        // 📌 **Özel Admin Girişi**
         if (email === "admin@osius.nl" && password === "admin") {
+            // localStorage.setItem("token", "dummy_admin_token");
+            localStorage.setItem("userType", "admin");
             navigate("/dashboard");
-        } else {
-            alert("Hatalı giriş! Lütfen bilgilerinizi kontrol edin.");
+            return;
+        }
+
+        try {
+            // 📌 **Backend'e Giriş Talebi Gönder**
+            const response = await fetch("http://localhost:8080/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Giriş başarısız!");
+            }
+
+            // // 📌 **JWT Token ve Kullanıcı Tipini Kaydet**
+            // localStorage.setItem("token", data.token);
+            localStorage.setItem("userType", data.userType);
+
+            // 📌 **Başarılı giriş sonrası yönlendirme**
+            navigate("/dashboard");
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -45,10 +77,12 @@ export default function Login() {
                     />
                     <button
                         type="submit"
-                        className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700"
+                        className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                        disabled={loading}
                     >
-                        Login
+                        {loading ? "Logging in..." : "Login"}
                     </button>
+                    {error && <p className="text-red-500 text-sm">{error}</p>}
                 </form>
             </div>
         </div>
