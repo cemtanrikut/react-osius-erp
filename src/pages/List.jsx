@@ -486,7 +486,11 @@ export default function List() {
         socket.onclose = () => {
             console.log("❌ WebSocket bağlantısı kapatıldı. Yeniden bağlanıyor...");
             setTimeout(() => {
-                setWs(new WebSocket("ws://https://api-osius.up.railway.app/ws"));
+                const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+                const wsHost = window.location.hostname === "localhost"
+                    ? "localhost:8080/ws" // 🛠 **Local ortam**
+                    : "api-osius.up.railway.app/ws"; // 🌍 **Prod ortam**
+                setWs(new WebSocket(`${wsProtocol}://${wsHost}`));
             }, 3000);
         };
 
