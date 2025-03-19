@@ -27,7 +27,7 @@ export default function Buildings() {
                     ? "http://localhost:8080"
                     : "https://api-osius.up.railway.app";
 
-                const response = await fetch(`${API_URL}/buildings`); // Hatalı string çıkarıldı
+                const response = await fetch(`https://api-osius.up.railway.app/buildings`); // Hatalı string çıkarıldı
                 if (!response.ok) throw new Error("Failed to fetch buildings");
 
                 const data = await response.json();

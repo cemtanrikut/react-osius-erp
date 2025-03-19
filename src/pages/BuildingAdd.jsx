@@ -28,7 +28,7 @@ export default function BuildingAdd() {
                     ? "http://localhost:8080"
                     : "https://api-osius.up.railway.app";
 
-            const response = await fetch("${API_URL}/buildings", {
+            const response = await fetch("https://api-osius.up.railway.app/buildings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newBuilding),

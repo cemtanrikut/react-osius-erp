@@ -28,7 +28,7 @@ export default function Workers() {
                     ? "http://localhost:8080"
                     : "https://api-osius.up.railway.app";
 
-                const response = await fetch(`${API_URL}/workers`);
+                const response = await fetch(`https://api-osius.up.railway.app/workers`);
                 if (!response.ok) {
                     throw new Error("Failed to fetch workers");
                 }

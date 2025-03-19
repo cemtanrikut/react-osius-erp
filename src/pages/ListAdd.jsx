@@ -52,9 +52,9 @@ export default function ListAdd() {
                     ? "http://localhost:8080"
                     : "https://api-osius.up.railway.app";
                 const [workersResponse, customersResponse, buildingsResponse] = await Promise.all([
-                    fetch("${API_URL}/workers"),
-                    fetch("${API_URL}/customers"),
-                    fetch("${API_URL}/buildings"),
+                    fetch("https://api-osius.up.railway.app/workers"),
+                    fetch("https://api-osius.up.railway.app/customers"),
+                    fetch("https://api-osius.up.railway.app/buildings"),
                 ]);
 
                 if (!workersResponse.ok || !customersResponse.ok || !buildingsResponse.ok) {
@@ -149,7 +149,7 @@ export default function ListAdd() {
         const selectedBuilding = buildings.find(building => building.id === newTicket.building);
 
             // 📌 **Ticket Gönderme**
-            const response = await fetch("${API_URL}/tickets", {
+            const response = await fetch("https://api-osius.up.railway.app/tickets", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -189,7 +189,7 @@ formData.append("metadata", JSON.stringify({ ticketID: ticketData.id }));
                     ? "http://localhost:8080"
                     : "https://api-osius.up.railway.app";
 
-                const fileUploadRes = await fetch(`${API_URL}/tickets/${ticketData.ticketId}/files`, {
+                const fileUploadRes = await fetch(`https://api-osius.up.railway.app/tickets/${ticketData.ticketId}/files`, {
                     method: "POST",
                     body: formData,
                 });

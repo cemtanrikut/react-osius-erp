@@ -113,7 +113,7 @@ export default function List() {
                     ? "http://localhost:8080"
                     : "https://api-osius.up.railway.app";
 
-                const response = await fetch("${API_URL}/tickets");
+                const response = await fetch("https://api-osius.up.railway.app/tickets");
                 if (!response.ok) {
                     throw new Error("Failed to fetch tickets");
                 }
@@ -151,7 +151,7 @@ export default function List() {
                 ? "http://localhost:8080"
                 : "https://api-osius.up.railway.app";
 
-            const response = await fetch(`${API_URL}/tickets/${ticket.ticketId}`, {
+            const response = await fetch(`https://api-osius.up.railway.app/tickets/${ticket.ticketId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ status: to }),
@@ -390,9 +390,9 @@ export default function List() {
                     ? "http://localhost:8080"
                     : "https://api-osius.up.railway.app";
                 const [customersResponse, buildingsResponse] = await Promise.all([
-                    fetch("${API_URL}/workers"),
-                    fetch("${API_URL}/customers"),
-                    fetch("${API_URL}/buildings"),
+                    fetch("https://api-osius.up.railway.app/workers"),
+                    fetch("https://api-osius.up.railway.app/customers"),
+                    fetch("https://api-osius.up.railway.app/buildings"),
                 ]);
 
                 if (!customersResponse.ok || !buildingsResponse.ok) {
@@ -452,8 +452,8 @@ export default function List() {
                 : "https://api-osius.up.railway.app";
 
             const [messagesResponse, filesResponse] = await Promise.all([
-                fetch(`${API_URL}/messages/${ticket.ticketId}`),
-                fetch(`${API_URL}/tickets/${ticket.ticketId}/files`)
+                fetch(`https://api-osius.up.railway.app/messages/${ticket.ticketId}`),
+                fetch(`https://api-osius.up.railway.app/tickets/${ticket.ticketId}/files`)
             ]);
 
             if (!messagesResponse.ok) throw new Error("Mesajlar yüklenemedi");
@@ -511,7 +511,7 @@ export default function List() {
                 const API_URL = window.location.hostname === "localhost"
                     ? "http://localhost:8080"
                     : "https://api-osius.up.railway.app";
-                const response = await fetch("${API_URL}/tickets");
+                const response = await fetch("https://api-osius.up.railway.app/tickets");
                 if (!response.ok) {
                     throw new Error("Failed to fetch tickets");
                 }
@@ -615,7 +615,8 @@ export default function List() {
             return ""; // Eğer fileURL tanımlı değilse, boş string döndür
         }
         if (!fileURL.startsWith("http")) {
-            return `${API_URL}${fileURL}`;
+            // return `${API_URL}${fileURL}`;
+            return `https://api-osius.up.railway.app${fileURL}`;
         }
         return fileURL;
     };
@@ -629,7 +630,7 @@ export default function List() {
                 ? "http://localhost:8080"
                 : "https://api-osius.up.railway.app";
 
-            const response = await fetch(`${API_URL}/tickets/${ticketToDelete.ticketId}`, {
+            const response = await fetch(`https://api-osius.up.railway.app/tickets/${ticketToDelete.ticketId}`, {
                 method: "DELETE",
             });
 

@@ -28,7 +28,7 @@ export default function Login() {
                 : "https://api-osius.up.railway.app";
 
             // 📌 **Backend'e Giriş Talebi Gönder**
-            const response = await fetch("${API_URL}/login", {
+            const response = await fetch("https://api-osius.up.railway.app/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),

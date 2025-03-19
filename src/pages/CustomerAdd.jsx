@@ -38,7 +38,7 @@ export default function CustomerAdd() {
             const API_URL = window.location.hostname === "localhost"
                 ? "http://localhost:8080"
                 : "https://api-osius.up.railway.app";
-            const response = await fetch("${API_URL}/customers", {
+            const response = await fetch("https://api-osius.up.railway.app/customers", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

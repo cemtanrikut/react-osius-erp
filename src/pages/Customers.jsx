@@ -23,7 +23,7 @@ export default function Customers() {
                     ? "http://localhost:8080"
                     : "https://api-osius.up.railway.app";
 
-                const response = await fetch(`${API_URL}/customers`); // URL string içinden düzeltilerek çıkarıldı
+                const response = await fetch(`https://api-osius.up.railway.app/customers`); // URL string içinden düzeltilerek çıkarıldı
                 if (!response.ok) throw new Error("Failed to fetch customers");
 
                 const data = await response.json();
