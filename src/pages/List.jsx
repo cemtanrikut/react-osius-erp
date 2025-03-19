@@ -616,8 +616,10 @@ export default function List() {
         }
         if (!fileURL.startsWith("http")) {
             // return `${API_URL}${fileURL}`;
-            return `https://api-osius.up.railway.app${fileURL}`;
+            return `https://api-osius.up.railway.app/${fileURL}`;
         }
+        // TODO: Silinecek
+        return `https://api-osius.up.railway.app/${fileURL}`;
         return fileURL;
     };
 
