@@ -1029,7 +1029,7 @@ export default function List() {
                                     <div className="mt-4 flex gap-3 overflow-x-auto">
                                         {selectedTicket.files.map((file, index) => {
                                             const fileURL = getFullFileURL(file?.fileUrl || file?.FileURL || "");
-                                            fileURL.replace("http://localhost:8080/", "");
+                                            fileURL.replace("http://localhost:8080", "");
                                             console.log("🎯 Görüntülenecek Dosya URL'si:", fileURL);
 
                                             return (
