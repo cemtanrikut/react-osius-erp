@@ -619,9 +619,9 @@ export default function List() {
             return `https://api-osius.up.railway.app/${fileURL}`;
         }
         // TODO: Silinecek
-        fileURL.replace("http://localhost:8080/", "");
+        fileURL.replace("http://localhost:8080", "");
         return `https://api-osius.up.railway.app/${fileURL}`;
-        return fileURL;
+        //return fileURL;
     };
 
 
