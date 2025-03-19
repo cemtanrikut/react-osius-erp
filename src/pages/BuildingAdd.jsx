@@ -24,7 +24,11 @@ export default function BuildingAdd() {
 
         try {
             console.log("🚀 Backend'e istek gönderiliyor...");
-            const response = await fetch("https://api-osius.up.railway.app/buildings", {
+            const API_URL = window.location.hostname === "localhost"
+                    ? "http://localhost:8080"
+                    : "https://api-osius.up.railway.app";
+
+            const response = await fetch("${API_URL}/buildings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newBuilding),

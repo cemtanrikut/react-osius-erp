@@ -13,8 +13,15 @@ export default function ListAdd() {
         title: "",
         description: "",
         assignedTo: "",
-        date: new Date().toLocaleDateString("tr-TR"),
-        customer: "",
+        date: new Date().toLocaleString("tr-TR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+        }), // ✅ Tarih ve saat eklendi        customer: "",
         building: "",
         files: [],
     };
@@ -37,15 +44,17 @@ export default function ListAdd() {
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false); // ✅ Form gönderim durumu
 
-
     // 📌 API’den verileri çek
     useEffect(() => {
         const fetchData = async () => {
             try {
+                const API_URL = window.location.hostname === "localhost"
+                    ? "http://localhost:8080"
+                    : "https://api-osius.up.railway.app";
                 const [workersResponse, customersResponse, buildingsResponse] = await Promise.all([
-                    fetch("https://api-osius.up.railway.app/workers"),
-                    fetch("https://api-osius.up.railway.app/customers"),
-                    fetch("https://api-osius.up.railway.app/buildings"),
+                    fetch("${API_URL}/workers"),
+                    fetch("${API_URL}/customers"),
+                    fetch("${API_URL}/buildings"),
                 ]);
 
                 if (!workersResponse.ok || !customersResponse.ok || !buildingsResponse.ok) {
@@ -130,21 +139,33 @@ export default function ListAdd() {
         setIsSubmitting(true); // 🕓 Form gönderimi başladı
 
         try {
+            const API_URL = window.location.hostname === "localhost"
+                ? "http://localhost:8080"
+                : "https://api-osius.up.railway.app";
+
+            // **Seçilen ID'ye göre isimleri alıyoruz**
+        const selectedWorker = workers.find(worker => worker.id === newTicket.assignedTo);
+        const selectedCustomer = customers.find(customer => customer.id === newTicket.customer);
+        const selectedBuilding = buildings.find(building => building.id === newTicket.building);
+
             // 📌 **Ticket Gönderme**
-            const response = await fetch("https://api-osius.up.railway.app/tickets", {
+            const response = await fetch("${API_URL}/tickets", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     title: newTicket.title,
                     description: newTicket.description,
                     workerId: newTicket.assignedTo,
+                    worker: selectedWorker ? selectedWorker.name : "", // **Yeni eklendi**
                     customerId: newTicket.customer,
+                    customer: selectedCustomer ? selectedCustomer.name : "", // **Yeni eklendi**
                     buildingId: newTicket.building,
+                    building: selectedBuilding ? selectedBuilding.name : "", // **Yeni eklendi**
                     notificationType: newTicket.notificationType,
                     date: newTicket.date,
                     status: "ToDo", // Varsayılan olarak yeni eklenen ticket "ToDo" olacak
                     creatorId: "1", // ✅ Geçici olarak user ID sabit, ileride dinamik yapılacak
-                    createdBy: "Admin", // gecici olarak admin
+                    createdBy: "Admin" // gecici olarak admin
                 }),
             });
 
@@ -154,14 +175,26 @@ export default function ListAdd() {
             // 📌 **Dosyaları Gönderme**
             if (newTicket.files && newTicket.files.length > 0) {
                 const formData = new FormData();
+                formData.append("ticket_id", ticketData.id); // ✅ ticketId olarak ekle
                 newTicket.files.forEach(file => {
                     formData.append("files", file.file);
                 });
 
-                const fileUploadRes = await fetch(`https://api-osius.up.railway.app/tickets/${ticketData.id}/files`, {
+                // Ticket ID'yi JSON olarak ekle
+formData.append("metadata", JSON.stringify({ ticket_id: ticketData.id }));
+formData.append("metadata", JSON.stringify({ ticketID: ticketData.id }));
+
+
+                const API_URL = window.location.hostname === "localhost"
+                    ? "http://localhost:8080"
+                    : "https://api-osius.up.railway.app";
+
+                const fileUploadRes = await fetch(`${API_URL}/tickets/${ticketData.ticketId}/files`, {
                     method: "POST",
                     body: formData,
                 });
+
+                console.log("Ticket ID gönderiliyor:", ticketData.id);
 
                 if (!fileUploadRes.ok) throw new Error("File upload failed");
             }

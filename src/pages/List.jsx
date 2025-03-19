@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { FaUser, FaMapMarkerAlt, FaCalendarAlt, FaHashtag, FaPlus, FaTimes, FaFileUpload, FaPaperclip, FaRegSmile, FaPaperPlane, FaFilter, FaTrash, FaExclamationTriangle } from "react-icons/fa";
+import {
+    FaUser, FaMapMarkerAlt, FaCalendarAlt, FaHashtag, FaEye, FaPlus, FaTimes, FaFileUpload, FaPaperclip,
+    FaRegSmile, FaPaperPlane, FaFilter, FaTrash, FaExclamationTriangle, FaUserAstronaut, FaExpand, FaCompress
+} from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom"; // React Router'dan useNavigate'i ekliyoruz
 
@@ -47,6 +50,8 @@ export default function List() {
     const [customers, setCustomers] = useState([]);
     const [buildings, setBuildings] = useState([]);
 
+    const [selectedTicketForModal, setSelectedTicketForModal] = useState(null);
+
     const navigate = useNavigate(); // useNavigate hook'u
 
     // Seçili ticket'ı ID'ye göre hesapla
@@ -55,6 +60,14 @@ export default function List() {
     const [ws, setWs] = useState(null);
 
     const [loading, setLoading] = useState(true);
+
+    // 📌 **Tam ekran mesajlaşma için state**
+    const [isChatFullScreen, setIsChatFullScreen] = useState(false);
+
+    // 📌 **Tam ekran modunu değiştiren fonksiyon**
+    const toggleChatFullScreen = () => {
+        setIsChatFullScreen(!isChatFullScreen);
+    };
 
     // ✏️ **Update Modal'ı Aç**
     const openUpdateModal = (ticket) => {
@@ -68,11 +81,39 @@ export default function List() {
         setIsDeleteModalOpen(true);
     };
 
+    // 📌 Tarihi "gg/aa/yyyy hh:mm:ss" formatına çeviren fonksiyon
+    const formatDate = (dateString) => {
+        if (!dateString) return ""; // Eğer tarih boşsa, boş string dön
+
+        // 🔹 Tarih string'ini parçalayarak gün, ay ve yılı al
+        const [day, month, year] = dateString.split("."); // "18.03.2025" → ["18", "03", "2025"]
+
+        // 🔹 Yeni bir Date nesnesi oluştur (saat/dakika/saniye ekleyerek)
+        const date = new Date(`${year}-${month}-${day}T00:00:00`); // "2025-03-18T00:00:00"
+
+        // 🔹 Formatlı tarih döndür
+        return date.toLocaleString("tr-TR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false, // 24 saat formatında göstermek için
+        });
+    };
+
+
+
     // 📌 **Backend'den Ticket'ları Çekme**
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await fetch("https://api-osius.up.railway.app/tickets");
+                const API_URL = window.location.hostname === "localhost"
+                    ? "http://localhost:8080"
+                    : "https://api-osius.up.railway.app";
+
+                const response = await fetch("${API_URL}/tickets");
                 if (!response.ok) {
                     throw new Error("Failed to fetch tickets");
                 }
@@ -106,7 +147,11 @@ export default function List() {
         try {
             console.log(`Moving Ticket: ${ticket.ticketId} from ${from} to ${to}`); // 🔥 Debug için
 
-            const response = await fetch(`https://api-osius.up.railway.app/tickets/${ticket.ticketId}`, {
+            const API_URL = window.location.hostname === "localhost"
+                ? "http://localhost:8080"
+                : "https://api-osius.up.railway.app";
+
+            const response = await fetch(`${API_URL}/tickets/${ticket.ticketId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ status: to }),
@@ -205,7 +250,7 @@ export default function List() {
     //         ],
     //       }));
     //     }
-    //   }; 
+    //   };
 
     // 📎 Dosya gönderme ve önizleme
     const handleFileUpload = (event) => {
@@ -278,19 +323,19 @@ export default function List() {
         toast.success("Ticket updated successfully!", { position: "top-right" });
     };
 
-    // ✅ **Ticket Silme Fonksiyonu**
-    const confirmDeleteTicket = () => {
-        if (!ticketToDelete) return;
+    // // ✅ **Ticket Silme Fonksiyonu**
+    // const confirmDeleteTicket = () => {
+    //     if (!ticketToDelete) return;
 
-        setTicketData((prev) => ({
-            ...prev,
-            [activeTab]: prev[activeTab].filter((t) => t.id !== ticketToDelete.id),
-        }));
+    //     setTicketData((prev) => ({
+    //         ...prev,
+    //         [activeTab]: prev[activeTab].filter((t) => t.id !== ticketToDelete.id),
+    //     }));
 
-        setSelectedTicket(null);
-        setIsDeleteModalOpen(false);
-        toast.success("Ticket deleted successfully!", { position: "top-right" });
-    };
+    //     setSelectedTicket(null);
+    //     setIsDeleteModalOpen(false);
+    //     toast.success("Ticket deleted successfully!", { position: "top-right" });
+    // };
 
 
     const descriptionInputRef = useRef(null);
@@ -341,10 +386,13 @@ export default function List() {
     useEffect(() => {
         const fetchCustomersAndBuildings = async () => {
             try {
+                const API_URL = window.location.hostname === "localhost"
+                    ? "http://localhost:8080"
+                    : "https://api-osius.up.railway.app";
                 const [customersResponse, buildingsResponse] = await Promise.all([
-                    fetch("https://api-osius.up.railway.app/workers"),
-                    fetch("https://api-osius.up.railway.app/customers"),
-                    fetch("https://api-osius.up.railway.app/buildings"),
+                    fetch("${API_URL}/workers"),
+                    fetch("${API_URL}/customers"),
+                    fetch("${API_URL}/buildings"),
                 ]);
 
                 if (!customersResponse.ok || !buildingsResponse.ok) {
@@ -365,31 +413,90 @@ export default function List() {
         fetchCustomersAndBuildings();
     }, []);
 
-    // 📌 Seçili Ticket'ı Güncelleme Fonksiyonu
+    // // 📌 Seçili Ticket'ı Güncelleme Fonksiyonu
+    // const handleSelectTicket = async (ticket) => {
+    //     setSelectedTicketId(ticket.ticketId);
+
+    //     try {
+    //         const API_URL = window.location.hostname === "localhost"
+    //             ? "http://localhost:8080"
+    //             : "https://api-osius.up.railway.app";
+    //         const response = await fetch(`http://localhost:8080/messages/${ticket.ticketId}`);
+    //         if (!response.ok) {
+    //             throw new Error("Mesajlar yüklenemedi");
+    //         }
+    //         const ticketMessages = await response.json();
+
+    //         // 📌 **Dosya ve resimleri mesajlara ekleyelim**
+    //         const formattedMessages = ticketMessages.map(msg => ({
+    //             ...msg,
+    //             fileType: msg.file_url ? (msg.file_url.endsWith(".jpg") || msg.file_url.endsWith(".png") ? "image" : "file") : null,
+    //         }));
+
+    //         setMessages((prev) => ({
+    //             ...prev,
+    //             [ticket.ticketId]: formattedMessages,
+    //         }));
+    //     } catch (error) {
+    //         console.error("❌ Mesajları yüklerken hata:", error);
+    //     }
+    // };
+
+    // 📌 Seçili Ticket'ı Güncelleme Fonksiyonu (Mesajları ve Dosyaları Aynı Anda Çekiyor)
     const handleSelectTicket = async (ticket) => {
         setSelectedTicketId(ticket.ticketId);
 
         try {
-            const response = await fetch(`https://api-osius.up.railway.app/messages/${ticket.ticketId}`);
-            if (!response.ok) {
-                throw new Error("Mesajlar yüklenemedi");
-            }
-            const ticketMessages = await response.json();
+            const API_URL = window.location.hostname === "localhost"
+                ? "http://localhost:8080"
+                : "https://api-osius.up.railway.app";
 
-            // 📌 **Dosya ve resimleri mesajlara ekleyelim**
-            const formattedMessages = ticketMessages.map(msg => ({
-                ...msg,
-                fileType: msg.file_url ? (msg.file_url.endsWith(".jpg") || msg.file_url.endsWith(".png") ? "image" : "file") : null,
-            }));
+            const [messagesResponse, filesResponse] = await Promise.all([
+                fetch(`${API_URL}/messages/${ticket.ticketId}`),
+                fetch(`${API_URL}/tickets/${ticket.ticketId}/files`)
+            ]);
 
+            if (!messagesResponse.ok) throw new Error("Mesajlar yüklenemedi");
+            if (!filesResponse.ok) throw new Error("Dosyalar yüklenemedi");
+
+            const ticketMessages = await messagesResponse.json();
+            const ticketFiles = await filesResponse.json();
+
+            console.log("✅ API'den Gelen Dosyalar:", ticketFiles); // 🔥 **Gelen dosya listesini kontrol et!**
+
+            setTicketData((prev) => {
+                const updatedData = {
+                    ...prev,
+                    [activeTab]: prev[activeTab].map(t =>
+                        t.ticketId === ticket.ticketId ? { ...t, files: ticketFiles } : t
+                    ),
+                };
+
+                console.log("✅ Güncellenmiş TicketData:", updatedData); // 🔥 Güncellenen state'i kontrol et!
+                return updatedData;
+            });
+
+            // Mesajları set et
             setMessages((prev) => ({
                 ...prev,
-                [ticket.ticketId]: formattedMessages,
+                [ticket.ticketId]: ticketMessages.map(msg => ({
+                    ...msg,
+                    fileType: msg.file_url ? (msg.file_url.endsWith(".jpg") || msg.file_url.endsWith(".png") ? "image" : "file") : null,
+                })),
             }));
+
         } catch (error) {
-            console.error("❌ Mesajları yüklerken hata:", error);
+            console.error("❌ Mesajları veya dosyaları yüklerken hata:", error);
         }
     };
+
+
+    useEffect(() => {
+        if (selectedTicket?.files) {
+            console.log("🖼 Gelen Dosya Listesi:", selectedTicket.files);
+        }
+    }, [selectedTicket]);
+
 
     useEffect(() => {
         if (selectedTicketId) {
@@ -401,7 +508,10 @@ export default function List() {
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await fetch("https://api-osius.up.railway.app/tickets");
+                const API_URL = window.location.hostname === "localhost"
+                    ? "http://localhost:8080"
+                    : "https://api-osius.up.railway.app";
+                const response = await fetch("${API_URL}/tickets");
                 if (!response.ok) {
                     throw new Error("Failed to fetch tickets");
                 }
@@ -500,7 +610,49 @@ export default function List() {
         };
     }, []);
 
+    const getFullFileURL = (fileURL) => {
+        if (!fileURL || typeof fileURL !== "string") {
+            return ""; // Eğer fileURL tanımlı değilse, boş string döndür
+        }
+        if (!fileURL.startsWith("http")) {
+            return `${API_URL}${fileURL}`;
+        }
+        return fileURL;
+    };
 
+
+    const confirmDeleteTicket = async () => {
+        if (!ticketToDelete) return;
+
+        try {
+            const API_URL = window.location.hostname === "localhost"
+                ? "http://localhost:8080"
+                : "https://api-osius.up.railway.app";
+
+            const response = await fetch(`${API_URL}/tickets/${ticketToDelete.ticketId}`, {
+                method: "DELETE",
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to delete ticket");
+            }
+
+            // **State'den silinen ticket'ı çıkar**
+            setTicketData((prev) => ({
+                ...prev,
+                [activeTab]: prev[activeTab].filter((t) => t.ticketId !== ticketToDelete.ticketId),
+            }));
+
+            setSelectedTicketId(null); // ✅ Seçili ticket'ı temizle
+            setIsDeleteModalOpen(false); // ✅ Modal'ı kapat
+
+            toast.success("Ticket deleted successfully!", { position: "top-right" });
+
+        } catch (error) {
+            console.error("Error deleting ticket:", error);
+            toast.error("Failed to delete ticket!");
+        }
+    };
 
 
 
@@ -607,6 +759,11 @@ export default function List() {
                 {/* Sol: Ticket Listesi */}
                 <div className="w-1/3 bg-gray-50 overflow-y-auto h-full p-4">
                     {ticketData[activeTab]
+                        .sort((a, b) => {
+                            const numA = parseInt(a.ticketId.replace("T-", ""), 10);
+                            const numB = parseInt(b.ticketId.replace("T-", ""), 10);
+                            return numB - numA; // Büyükten küçüğe sıralama
+                        })
                         .filter((ticket) => !filterAssignedTo || ticket.customer === filterAssignedTo)
                         .filter((ticket) => !filterBuilding || ticket.building === filterBuilding)
                         .filter((ticket) => !filterCategory || ticket.type === filterCategory)
@@ -628,9 +785,27 @@ export default function List() {
                                 {/* Ticket Başlığı */}
                                 <h3 className="text-md font-bold">{ticket.title}</h3>
 
-                                {/* Açıklama */}
-                                <p className="text-sm text-gray-600 mt-1 line-clamp-2">{ticket.description}</p>
+                                {/* Açıklama (2 Satır Gösterim) */}
+                                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                    {ticket.description.length > 100 ? (
+                                        <>
+                                            {ticket.description.slice(0, 50)}...{" "}
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedTicketForModal(ticket);
+                                                    setIsModalOpen(true);
+                                                    e.stopPropagation(); // 📌 Kartın genişlemesini engelle
 
+                                                }}
+                                                className="text-blue-500 font-semibold hover:underline"
+                                            >
+                                                Read more
+                                            </button>
+                                        </>
+                                    ) : (
+                                        ticket.description
+                                    )}
+                                </p>
                                 {/* Konum, Kişi ve Tarih */}
                                 <div className="flex justify-between text-gray-600 text-xs mt-4">
                                     <div className="flex items-center">
@@ -639,21 +814,60 @@ export default function List() {
                                     </div>
                                     <div className="flex items-center">
                                         <FaUser className="mr-1 text-blue-500" />
-                                        <span>Customer: {ticket.customer}</span>
+                                        <span>Customer: {ticket.Customer}</span>
                                     </div>
                                     <div className="flex items-center">
                                         <FaCalendarAlt className="mr-1 text-red-500" />
-                                        <span>{ticket.date}</span>
+                                        <span>{formatDate(ticket.date)}</span> {/* ✅ Tarih formatlandı */}
+                                    </div>
+                                </div>
+                                <div className="flex justify-between text-gray-600 text-xs mt-4">
+                                    <div className="flex items-center">
+                                        <FaMapMarkerAlt className="mr-1 text-green-500" />
+                                        <span>Assign To: {ticket.worker}</span>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between text-gray-600 text-xs mt-4">
+                                    <div className="flex items-center">
+                                        <FaUserAstronaut className="mr-1 text-green-500" />
+                                        <span>Created from: {ticket.createdBy}</span>
                                     </div>
                                 </div>
 
                                 {/* Bildirim Türü */}
-                                <div className={`mt-3 text-xs font-semibold px-3 py-1 rounded-full inline-block ${notificationTypes[ticket.type]}`}>
-                                    {ticket.type}
+                                <div className={`mt-3 text-xs font-semibold px-3 py-1 rounded-full inline-block ${notificationTypes[ticket.notificationType]}`}>
+                                    {ticket.notificationType}
                                 </div>
                             </div>
                         ))}
                 </div>
+
+
+                {/* Açıklama Modalı */}
+                <Transition appear show={isModalOpen} as={Fragment}>
+                    <Dialog as="div" className="relative z-10" onClose={() => setIsModalOpen(false)}>
+                        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                            <Dialog.Panel className="bg-white rounded-lg shadow-xl p-6 w-[500px] max-w-full max-h-[80vh] overflow-y-auto">
+                                <Dialog.Title className="text-xl font-semibold mb-4 flex items-center">
+                                    <FaEye className="mr-2 text-blue-500" />
+                                    {selectedTicketForModal?.title}
+                                </Dialog.Title>
+
+                                {/* Açıklama İçeriği */}
+                                <div className="max-h-[50vh] overflow-y-auto text-gray-700 break-words">
+                                    {selectedTicketForModal?.description}
+                                </div>
+
+                                <button
+                                    className="mt-4 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                                    onClick={() => setIsModalOpen(false)}
+                                >
+                                    Close
+                                </button>
+                            </Dialog.Panel>
+                        </div>
+                    </Dialog>
+                </Transition>
 
 
                 {/* Sağ: Ticket Detayı + Mesajlar */}
@@ -763,10 +977,10 @@ export default function List() {
                 </p> */}
 
                                 {/* Konum */}
-                                <p className="text-gray-500 mt-2 flex items-center">
+                                {/* <p className="text-gray-500 mt-2 flex items-center">
                                     <FaMapMarkerAlt className="mr-2 text-green-500" />
                                     {selectedTicket.building}
-                                </p>
+                                </p> */}
 
                                 {/* Tarih */}
                                 {/* <p className="text-gray-500 mt-2 flex items-center">
@@ -775,27 +989,80 @@ export default function List() {
                 </p> */}
 
                                 {/* Created By */}
-                                <p className="text-gray-500 mt-2 flex items-center text-xs">
+                                {/* <p className="text-gray-500 mt-2 flex items-center text-xs">
                                     <FaUser className="mr-2 text-gray-500" />
                                     <span className="font-semibold">Created By: </span> {selectedTicket.createdBy}
-                                </p>
+                                </p> */}
 
                                 {/* Bildirim Türü */}
                                 {/* <div className={`mt-3 text-xs font-semibold px-3 py-1 rounded-full inline-block ${notificationTypes[selectedTicket.type]}`}>
                 {selectedTicket.type}
                 </div> */}
 
-                                {/* Açıklama */}
-                                <p className="mt-4 text-gray-700 whitespace-pre-line">{selectedTicket.description}</p>
-                                {/* Eğer ticket içinde resim varsa göster */}
-                                {selectedTicket.attachedImage && (
-                                    <img
-                                        src={selectedTicket.attachedImage}
-                                        alt="Attached Image"
-                                        className="mt-4 w-40 h-auto rounded-lg shadow cursor-pointer hover:opacity-80"
-                                        onClick={() => setPreviewImage(selectedTicket.attachedImage)}
-                                    />
+                                {/* Açıklama (2 Satır Gösterim) */}
+                                <p className="mt-4 text-gray-700 whitespace-pre-line break-words">
+                                    {selectedTicket.description.length > 150 ? (
+                                        <>
+                                            {selectedTicket.description.slice(0, 70)}...
+                                            <span
+                                                onClick={() => {
+                                                    setSelectedTicketForModal(selectedTicket); // 🔥 **Modal için seçili ticket'ı ayarla**
+                                                    setIsModalOpen(true); // 🔥 **Modalı aç**
+                                                }}
+                                                className="text-blue-500 font-semibold hover:underline cursor-pointer ml-1"
+                                            >
+                                                Read more
+                                            </span>
+                                        </>
+                                    ) : (
+                                        selectedTicket.description
+                                    )}
+                                </p>
+
+                                {/* Eğer ticket içinde birden fazla dosya varsa göster */}
+                                {selectedTicket?.files?.length > 0 ? (
+                                    <div className="mt-4 flex gap-3 overflow-x-auto">
+                                        {selectedTicket.files.map((file, index) => {
+                                            const fileURL = getFullFileURL(file?.fileUrl || file?.FileURL || "");
+
+                                            console.log("🎯 Görüntülenecek Dosya URL'si:", fileURL);
+
+                                            return (
+                                                <div key={index} className="relative">
+                                                    {fileURL && (fileURL.toLowerCase().endsWith(".jpg") || fileURL.toLowerCase().endsWith(".png")) ? (
+                                                        <img
+                                                            src={fileURL}
+                                                            alt={`Attachment ${index + 1}`}
+                                                            className="w-24 h-24 object-cover rounded-lg shadow cursor-pointer hover:opacity-80"
+                                                            onClick={() => setPreviewImage(fileURL)}
+                                                        />
+                                                    ) : (
+                                                        fileURL ? (
+                                                            <a
+                                                                href={fileURL}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-blue-500 underline flex items-center"
+                                                            >
+                                                                <FaPaperclip className="mr-2" />
+                                                                {file?.Filename || "Unknown File"}
+                                                            </a>
+                                                        ) : (
+                                                            <p className="text-gray-500 text-sm italic">No file available</p>
+                                                        )
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 text-sm italic">No files attached to this ticket.</p>
                                 )}
+
+
+
+
+
 
                                 {/* 🏷 Büyük Resim Önizleme Modali */}
                                 {previewImage && (
@@ -812,11 +1079,34 @@ export default function List() {
                                     </div>
                                 )}
 
+
                             </div>
 
                             {/* Messages Bölümü */}
-                            <div className="mt-6 flex-grow flex flex-col bg-gray-100 rounded-lg p-4 overflow-y-auto">
-                                <h3 className="text-lg font-semibold mb-2">Messages</h3>
+                            {/* <div className="mt-6 flex-grow flex flex-col bg-gray-100 rounded-lg p-4 overflow-y-auto"> */}
+                            <div className={`mt-6 flex-grow flex flex-col bg-gray-100 rounded-lg p-4 overflow-y-auto transition-all duration-300
+    ${isChatFullScreen ? "fixed inset-0 z-50 w-screen h-screen bg-white p-6 shadow-xl" : ""}
+`}>
+                                {/* 🎯 Tam ekran açma/kapatma butonu - Mesaj alanının içinde */}
+                                {/* <div className="absolute top-2 right-2">
+                                    <button
+                                        className="bg-gray-200 p-3 rounded-full shadow hover:bg-gray-300 transition"
+                                        onClick={toggleChatFullScreen}
+                                    >
+                                        {isChatFullScreen ? <FaCompress className="text-gray-700 text-xl" /> : <FaExpand className="text-gray-700 text-xl" />}
+                                    </button>
+                                </div> */}
+
+                                {/* 🎯 Başlık ve Tam Ekran Butonu */}
+                                <div className="flex justify-between items-center mb-2">
+                                    <h3 className="text-lg font-semibold">Messages</h3>
+                                    <button
+                                        className="bg-gray-200 p-3 rounded-full shadow hover:bg-gray-300 transition"
+                                        onClick={toggleChatFullScreen}
+                                    >
+                                        {isChatFullScreen ? <FaCompress className="text-gray-700 text-xl" /> : <FaExpand className="text-gray-700 text-xl" />}
+                                    </button>
+                                </div>
                                 <div className="flex flex-col space-y-2">
                                     {(messages[selectedTicket.ticketId] || []).map((msg, index) => (
                                         <div
@@ -871,7 +1161,10 @@ export default function List() {
                                 </div>
                             )}
                             {/* Mesaj Yazma Alanı (Sabit Duracak) */}
-                            <div className="border-t flex items-center bg-white p-3">
+                            <div
+                                className={`border-t flex items-center bg-white p-3 transition-all duration-300 
+        ${isChatFullScreen ? "fixed bottom-0 left-0 w-full p-4 bg-gray-100 z-50" : ""}`}
+                            >
                                 <button className="text-gray-500 p-2 hover:text-green-500" onClick={() => fileInputRef.current.click()}>
                                     <FaPaperclip />
                                 </button>

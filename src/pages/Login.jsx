@@ -23,8 +23,12 @@ export default function Login() {
         }
 
         try {
+            const API_URL = window.location.hostname === "localhost"
+                ? "http://localhost:8080"
+                : "https://api-osius.up.railway.app";
+
             // 📌 **Backend'e Giriş Talebi Gönder**
-            const response = await fetch("https://api-osius.up.railway.app/login", {
+            const response = await fetch("${API_URL}/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),

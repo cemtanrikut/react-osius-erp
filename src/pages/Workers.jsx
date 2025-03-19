@@ -1,56 +1,47 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
+import { 
     FaFilter, FaPlus, FaEye, FaTimes, FaUserCircle, FaPhone,
-    FaEnvelope, FaCheckCircle, FaArrowRight, FaArrowLeft,
-    FaIdBadge, FaBriefcase, FaMoneyBillWave, FaCalendarAlt,
-    FaEdit
+    FaEnvelope, FaCheckCircle, FaArrowLeft, FaArrowRight, FaEdit
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 
-// Rastgele worker verileri oluşturma
-const generateWorkers = () => {
-    const firstNames = ["John", "Jane", "Alice", "Bob", "Charlie", "David", "Emma", "Frank", "Grace", "Henry"];
-    const lastNames = ["Smith", "Johnson", "Brown", "Williams", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez"];
-
-    return Array.from({ length: 50 }, (_, index) => {
-        const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-        const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-        return {
-            id: `W-${index + 1}`,
-            name: `${firstName} ${lastName}`,
-            phone: `+31 6 ${Math.floor(10000000 + Math.random() * 90000000)}`,
-            email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
-            status: ["Active", "Inactive", "On Leave"][Math.floor(Math.random() * 3)]
-        };
-    });
-};
-
 export default function Workers() {
     const navigate = useNavigate();
-    const [workers, setWorkers] = useState(generateWorkers());
-    const [filteredWorkers, setFilteredWorkers] = useState(workers);
+    const [workers, setWorkers] = useState([]);
+    const [filteredWorkers, setFilteredWorkers] = useState([]);
     const [searchId, setSearchId] = useState("");
     const [searchName, setSearchName] = useState("");
-    const [statusFilter, setStatusFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("Active");
     const [currentPage, setCurrentPage] = useState(1);
     const workersPerPage = 10;
     const [selectedWorker, setSelectedWorker] = useState(null);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [newWorker, setNewWorker] = useState({ name: "", phone: "", email: "", department: "", role: "", startDate: "", status: "Active" });
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     // 📌 **Backend'den Worker'ları Çekme**
     useEffect(() => {
         const fetchWorkers = async () => {
+            setIsLoading(true);
             try {
-                const response = await fetch("https://api-osius.up.railway.app/workers"); // Backend URL
-                if (!response.ok) throw new Error("Failed to fetch workers");
+                const API_URL = window.location.hostname === "localhost"
+                    ? "http://localhost:8080"
+                    : "https://api-osius.up.railway.app";
+
+                const response = await fetch(`${API_URL}/workers`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch workers");
+                }
                 const data = await response.json();
                 setWorkers(data);
                 setFilteredWorkers(data);
+                setError(null);
             } catch (error) {
                 console.error("Error fetching workers:", error);
                 toast.error("Error fetching workers!", { position: "top-right" });
+                setError("Failed to load workers.");
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -58,55 +49,26 @@ export default function Workers() {
     }, []);
 
     // ✅ **Filtreleme Fonksiyonu**
-    const filterWorkers = () => {
-        let filtered = workers.filter((worker) =>
+    useEffect(() => {
+        const filtered = workers.filter((worker) =>
             (searchId ? worker.id.toLowerCase().includes(searchId.toLowerCase()) : true) &&
             (searchName ? worker.name.toLowerCase().includes(searchName.toLowerCase()) : true) &&
             (statusFilter ? worker.status === statusFilter : true)
         );
-
         setFilteredWorkers(filtered);
         setCurrentPage(1);
-    };
-
-    // ✅ **Filtrelemeyi her değişiklikte çalıştır**
-    useEffect(() => {
-        filterWorkers();
     }, [searchId, searchName, statusFilter, workers]);
 
     // Filtreleri Temizleme
     const clearFilters = () => {
         setSearchId("");
         setSearchName("");
-        setStatusFilter("");
+        setStatusFilter("Active");
         setFilteredWorkers(workers);
         setCurrentPage(1);
     };
 
-    // ✅ **Worker Ekleme**
-    const addWorker = () => {
-        if (!newWorker.name || !newWorker.phone || !newWorker.email || !newWorker.department || !newWorker.role || !newWorker.startDate) {
-            toast.error("All fields are required!", { position: "top-right" });
-            return;
-        }
-
-        const newId = `W-${workers.length + 1}`;
-        const newEntry = { id: newId, ...newWorker };
-
-        setWorkers((prevWorkers) => {
-            const updatedWorkers = [newEntry, ...prevWorkers];
-            setFilteredWorkers(updatedWorkers);
-            return updatedWorkers;
-        });
-
-        setNewWorker({ name: "", phone: "", email: "", department: "", role: "", startDate: "", status: "Active" });
-        setIsAddModalOpen(false);
-
-        toast.success("Worker added successfully!", { position: "top-right" });
-    };
-
-
-    // Pagination hesaplama (HATA ÖNLEMELİ)
+    // ✅ **Pagination hesaplama (HATA ÖNLEMELİ)**
     const indexOfLastWorker = currentPage * workersPerPage;
     const indexOfFirstWorker = indexOfLastWorker - workersPerPage;
     const currentWorkers = (filteredWorkers || []).slice(indexOfFirstWorker, indexOfLastWorker);
@@ -115,7 +77,8 @@ export default function Workers() {
         <div className="p-6">
             <Toaster />
             <h1 className="text-2xl font-bold mb-6">Workers</h1>
-            {/* 🎯 Filtreleme Alanı */}
+
+            {/* 🎯 **Filtreleme Alanı** */}
             <div className="bg-white shadow-md rounded-lg p-4 mb-4 flex items-center gap-4">
                 <FaFilter className="text-gray-600" />
                 <input
@@ -123,28 +86,19 @@ export default function Workers() {
                     placeholder="Search by ID"
                     className="border px-3 py-2 rounded-lg"
                     value={searchId}
-                    onChange={(e) => {
-                        setSearchId(e.target.value);
-                        filterWorkers(e.target.value, searchName, statusFilter);
-                    }}
+                    onChange={(e) => setSearchId(e.target.value)}
                 />
                 <input
                     type="text"
                     placeholder="Search by Name"
                     className="border px-3 py-2 rounded-lg"
                     value={searchName}
-                    onChange={(e) => {
-                        setSearchName(e.target.value);
-                        filterWorkers(searchId, e.target.value, statusFilter);
-                    }}
+                    onChange={(e) => setSearchName(e.target.value)}
                 />
                 <select
                     className="border px-3 py-2 rounded-lg"
                     value={statusFilter}
-                    onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        filterWorkers(searchId, searchName, e.target.value);
-                    }}
+                    onChange={(e) => setStatusFilter(e.target.value)}
                 >
                     <option value="">Filter by Status</option>
                     <option value="Active">Active</option>
@@ -156,223 +110,88 @@ export default function Workers() {
                 </button>
                 <button
                     className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 ml-auto flex items-center"
-                    onClick={() => {
-                        navigate("/dashboard/workers/add")
-                        // setIsAddModalOpen(true); // Modalı aç
-                        // setNewWorker({ name: "", phone: "", email: "", department: "", role: "", startDate: "", status: "Active" }); // Formu sıfırla
-                    }}
+                    onClick={() => navigate("/dashboard/workers/add")}
                 >
                     <FaPlus className="mr-2" />
                     Add Worker
                 </button>
-
             </div>
 
-            {/* 🎯 Worker Listesi */}
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="w-full border-collapse">
-                    <thead className="bg-gray-100">
-                        <tr className="text-left">
-                            <th className="p-3 border-b">ID</th>
-                            <th className="p-3 border-b">Name</th>
-                            <th className="p-3 border-b">Phone</th>
-                            <th className="p-3 border-b">Email</th>
-                            <th className="p-3 border-b">Status</th>
-                            <th className="p-3 border-b">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentWorkers.map((worker) => (
-                            <tr
-                                key={worker.id}
-                                className="hover:bg-gray-50 cursor-pointer"
-                                onClick={() => navigate(`/dashboard/workers/${worker.id}`, { state: { worker } })}
-                            >
-                                <td className="p-3 border-b">{worker.id}</td>
-                                <td className="p-3 border-b">{worker.name}</td>
-                                <td className="p-3 border-b">{worker.phone}</td>
-                                <td className="p-3 border-b">{worker.email}</td>
-                                <td className="p-3 border-b">
-                                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${worker.status === "Active"
-                                            ? "bg-green-300 text-green-800"
-                                            : worker.status === "Inactive"
-                                                ? "bg-red-300 text-red-800"
-                                                : "bg-yellow-300 text-yellow-800"
-                                        }`}>
-                                        {worker.status}
-                                    </span>
-                                </td>
-                                <td className="p-3 border-b">
-                                    <button
-                                        className="text-blue-500 hover:text-blue-700"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/dashboard/workers/${worker.id}`, { state: { worker } });
-                                        }}                  >
-                                        <FaEye />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            {/* 📌 **Veri yüklenirken veya hata alındığında** */}
+            {isLoading ? (
+                <p className="text-center text-gray-600">Loading workers...</p>
+            ) : error ? (
+                <p className="text-center text-red-600">{error}</p>
+            ) : (
+                <>
+                    {/* 🎯 **Worker Listesi** */}
+                    <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                        <table className="w-full border-collapse">
+                            <thead className="bg-gray-100">
+                                <tr className="text-left">
+                                    <th className="p-3 border-b">ID</th> {/* ✅ ID sütunu eklendi */}
+                                    <th className="p-3 border-b">Name</th>
+                                    <th className="p-3 border-b">Phone</th>
+                                    <th className="p-3 border-b">Email</th>
+                                    <th className="p-3 border-b">Status</th>
+                                    <th className="p-3 border-b">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {currentWorkers.map((worker) => (
+                                    <tr
+                                        key={worker.id}
+                                        className="hover:bg-gray-50 cursor-pointer"
+                                        onClick={() => navigate(`/dashboard/workers/${worker.id}`, { state: { worker } })}
+                                    >
+                                        <td className="p-3 border-b">{worker.id}</td> {/* ✅ ID gösteriliyor */}
+                                        <td className="p-3 border-b">{worker.name}</td>
+                                        <td className="p-3 border-b">{worker.phone}</td>
+                                        <td className="p-3 border-b">{worker.email}</td>
+                                        <td className="p-3 border-b">
+                                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${worker.status === "Active"
+                                                ? "bg-green-300 text-green-800"
+                                                : worker.status === "Inactive"
+                                                    ? "bg-red-300 text-red-800"
+                                                    : "bg-yellow-300 text-yellow-800"
+                                                }`}>
+                                                {worker.status}
+                                            </span>
+                                        </td>
+                                        <td className="p-3 border-b">
+                                            <button
+                                                className="text-blue-500 hover:text-blue-700"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/dashboard/workers/${worker.id}`, { state: { worker } });
+                                                }}
+                                            >
+                                                <FaEye />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
-            {/* 🎯 Worker Detay Modalı */}
-            {selectedWorker && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold flex items-center gap-2">
-                                <FaUserCircle className="text-blue-500" /> Worker Details
-                            </h2>
-                            <button
-                                className="text-gray-500 hover:text-red-500"
-                                onClick={() => setSelectedWorker(null)}
-                            >
-                                <FaTimes />
+                    {/* 🎯 **Pagination** */}
+                    <div className="flex justify-between items-center mt-4">
+                        <p className="text-gray-600">
+                            Showing {indexOfFirstWorker + 1}-
+                            {Math.min(indexOfLastWorker, filteredWorkers.length)} of {filteredWorkers.length} workers
+                        </p>
+                        <div className="flex gap-2">
+                            <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-3 py-1 rounded-lg bg-blue-500 text-white hover:bg-blue-600">
+                                Prev
                             </button>
-                        </div>
-
-                        <div className="space-y-3">
-                            <p className="flex items-center">
-                                <FaUserCircle className="text-blue-500 mr-2" />
-                                <strong>Name:</strong> {selectedWorker.name}
-                            </p>
-
-                            <p className="flex items-center">
-                                <FaPhone className="text-green-500 mr-2" />
-                                <strong>Phone:</strong> {selectedWorker.phone}
-                            </p>
-
-                            <p className="flex items-center">
-                                <FaEnvelope className="text-red-500 mr-2" />
-                                <strong>Email:</strong> {selectedWorker.email}
-                            </p>
-
-                            <p className="flex items-center">
-                                <FaCheckCircle
-                                    className={`mr-2 ${selectedWorker.status === "Active"
-                                            ? "text-green-500"
-                                            : selectedWorker.status === "Inactive"
-                                                ? "text-red-500"
-                                                : "text-yellow-500"
-                                        }`}
-                                />
-                                <strong>Status:</strong> {selectedWorker.status}
-                            </p>
-                        </div>
-
-                        {/* 🎯 Update & Close Butonları */}
-                        <div className="mt-4 flex gap-3">
-                            <button
-                                className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center justify-center w-full hover:bg-blue-600"
-                                onClick={() => console.log("Update Worker: ", selectedWorker)}
-                            >
-                                <FaEdit className="mr-2" /> Update
-                            </button>
-
-                            <button
-                                className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center justify-center w-full hover:bg-red-600"
-                                onClick={() => setSelectedWorker(null)}
-                            >
-                                <FaTimes className="mr-2" /> Close
+                            <button disabled={currentPage >= Math.ceil(filteredWorkers.length / workersPerPage)} onClick={() => setCurrentPage(prev => prev + 1)} className="px-3 py-1 rounded-lg bg-blue-500 text-white hover:bg-blue-600">
+                                Next
                             </button>
                         </div>
                     </div>
-                </div>
+                </>
             )}
-
-
-            {/* 🎯 Worker Ekleme Modalı */}
-            {isAddModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-[450px]">
-                        <div className="flex justify-between">
-                            <h2 className="text-xl font-bold flex items-center gap-2"><FaPlus /> Add Worker</h2>
-                            <button onClick={() => setIsAddModalOpen(false)} className="text-gray-500 hover:text-red-500">
-                                <FaTimes />
-                            </button>
-                        </div>
-
-                        <div className="mt-3 space-y-3">
-                            {/* Full Name Input */}
-                            <div className="flex items-center border px-3 py-2 rounded-lg">
-                                <FaUserCircle className="text-blue-500 mr-2" />
-                                <input
-                                    type="text"
-                                    placeholder="Full Name"
-                                    className="w-full outline-none"
-                                    value={newWorker.name}
-                                    onChange={(e) => setNewWorker({ ...newWorker, name: e.target.value })}
-                                />
-                            </div>
-
-                            {/* Phone Input */}
-                            <div className="flex items-center border px-3 py-2 rounded-lg">
-                                <FaPhone className="text-green-500 mr-2" />
-                                <input
-                                    type="text"
-                                    placeholder="Phone"
-                                    className="w-full outline-none"
-                                    value={newWorker.phone}
-                                    onChange={(e) => setNewWorker({ ...newWorker, phone: e.target.value })}
-                                />
-                            </div>
-
-                            {/* Email Input */}
-                            <div className="flex items-center border px-3 py-2 rounded-lg">
-                                <FaEnvelope className="text-red-500 mr-2" />
-                                <input
-                                    type="email"
-                                    placeholder="Email"
-                                    className="w-full outline-none"
-                                    value={newWorker.email}
-                                    onChange={(e) => setNewWorker({ ...newWorker, email: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-
-                        <button
-                            className="bg-green-600 text-white px-4 py-2 mt-4 rounded-lg w-full flex items-center justify-center gap-2 hover:bg-green-700 transition-all"
-                            onClick={addWorker}
-                        >
-                            <FaPlus className="text-sm" />
-                            <span>Add Worker</span>
-                        </button>
-
-                    </div>
-                </div>
-            )}
-
-            {/* 🎯 Pagination */}
-            <div className="flex justify-between items-center mt-4">
-                <p className="text-gray-600">
-                    Showing {(filteredWorkers?.length || 0) > 0 ? indexOfFirstWorker + 1 : 0}-
-                    {(filteredWorkers?.length || 0) > 0 ? Math.min(indexOfLastWorker, filteredWorkers.length) : 0}
-                    of {filteredWorkers?.length || 0} workers
-                </p>
-
-                <div className="flex gap-2">
-                    <button
-                        className={`px-3 py-1 rounded-lg ${currentPage === 1 ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"}`}
-                        disabled={currentPage === 1 || (filteredWorkers?.length || 0) === 0}
-                        onClick={() => setCurrentPage((prev) => prev - 1)}
-                    >
-                        Prev
-                    </button>
-
-                    <button
-                        className={`px-3 py-1 rounded-lg ${currentPage >= Math.ceil((filteredWorkers?.length || 1) / workersPerPage) ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"}`}
-                        disabled={currentPage >= Math.ceil((filteredWorkers?.length || 1) / workersPerPage)}
-                        onClick={() => setCurrentPage((prev) => prev + 1)}
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
-
         </div>
     );
 }
