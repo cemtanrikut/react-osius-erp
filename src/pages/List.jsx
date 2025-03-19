@@ -620,6 +620,7 @@ export default function List() {
         }
         // TODO: Silinecek
         fileURL.replace("http://localhost:8080", "");
+        console.log("GELEN URL : ", fileURL)
         return `https://api-osius.up.railway.app/${fileURL}`;
         //return fileURL;
     };
