@@ -18,10 +18,12 @@ export default function CustomerAdd() {
     });
 
     // 👥 Contactpersonen için dinamik alanlar
-    const [contacts, setContacts] = useState([{ firstName: "", lastName: "", email: "", phone: "" }]);
+    const [contacts, setContacts] = useState([{ firstName: "", email: "", password: "", role: "", phone: "" }]);
+    const [showContacts, setShowContacts] = useState(false);
+
 
     const addContact = () => {
-        setContacts([...contacts, { firstName: "", lastName: "", email: "", phone: "" }]);
+        setContacts([...contacts, { firstName: "", email: "", password: "", role: "", phone: "" }]);
     };
 
     const removeContact = (index) => {
@@ -33,42 +35,64 @@ export default function CustomerAdd() {
             toast.error("All fields are required!", { position: "top-right" });
             return;
         }
-
+    
         try {
             const API_URL = window.location.hostname === "localhost"
                 ? "http://localhost:8080"
                 : "https://api-osius.up.railway.app";
-            const response = await fetch("https://api-osius.up.railway.app/customers", {
+    
+            // 📌 **Önce Customer'ı ekleyelim**
+            const customerResponse = await fetch(`https://api-osius.up.railway.app/customers`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...newCustomer,
-                    contacts: contacts.map(contact => ({
-                        firstName: contact.firstName,
-                        lastName: contact.lastName,
-                        email: contact.email,
-                        phone: contact.phone
-                    }))
-                }),
+                body: JSON.stringify(newCustomer),
             });
-
-            if (!response.ok) {
+    
+            if (!customerResponse.ok) {
                 throw new Error("Failed to add customer");
             }
-
-            const data = await response.json();
+    
+            const createdCustomer = await customerResponse.json();
+            const customerId = createdCustomer.id; // 📌 API'den dönen Customer ID'yi al
+    
+            // 📌 **Contact Person'ları ekleyelim (eğer varsa)**
+            if (contacts.length > 0) {
+                await Promise.all(contacts.map(async (contact) => {
+                    const contactData = {
+                        customerId,  // 📌 Yeni oluşturulan müşteri ID'sini bağlayarak gönderiyoruz
+                        buildingId: "", // 📌 BuildingID boş bırakılacak
+                        firstName: contact.firstName,
+                        email: contact.email,
+                        password: contact.password,
+                        role: contact.role,
+                        phone: contact.phone
+                    };
+    
+                    const contactResponse = await fetch(`https://api-osius.up.railway.app/contacts`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(contactData),
+                    });
+    
+                    if (!contactResponse.ok) {
+                        throw new Error("Failed to add contact person");
+                    }
+                }));
+            }
+    
             toast.success("Customer added successfully!", { position: "top-right" });
-
-            // Başarıyla eklendiğinde Customers sayfasına yönlendir
+    
+            // ✅ Başarıyla eklendiyse Customers sayfasına yönlendir
             setTimeout(() => {
                 navigate("/dashboard/customers");
             }, 1500);
-
+    
         } catch (error) {
             console.error("Error adding customer:", error);
             toast.error("Error adding customer. Please try again!", { position: "top-right" });
         }
     };
+    
 
 
     return (
@@ -299,12 +323,18 @@ export default function CustomerAdd() {
 
                 {/* 🔹 Contactpersonen (Kişiler) */}
                 <div className="w-1/3">
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><FaUsers /> Contactpersonen</h2>
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <FaUsers /> Contactpersonen
+            </h2>
 
+            {showContacts ? (
+                <>
                     {contacts.map((contact, index) => (
                         <div key={index} className="mb-4 border p-3 rounded-lg relative">
                             <input
-                                type="text" placeholder="Voornaam" className="w-full border px-2 py-1 mb-2 rounded"
+                                type="text"
+                                placeholder="Naam"
+                                className="w-full border px-2 py-1 mb-2 rounded"
                                 value={contact.firstName}
                                 onChange={(e) => {
                                     const newContacts = [...contacts];
@@ -313,16 +343,9 @@ export default function CustomerAdd() {
                                 }}
                             />
                             <input
-                                type="text" placeholder="Achternaam" className="w-full border px-2 py-1 mb-2 rounded"
-                                value={contact.lastName}
-                                onChange={(e) => {
-                                    const newContacts = [...contacts];
-                                    newContacts[index].lastName = e.target.value;
-                                    setContacts(newContacts);
-                                }}
-                            />
-                            <input
-                                type="text" placeholder="E-mailadres" className="w-full border px-2 py-1 mb-2 rounded"
+                                type="email"
+                                placeholder="E-mailadres"
+                                className="w-full border px-2 py-1 mb-2 rounded"
                                 value={contact.email}
                                 onChange={(e) => {
                                     const newContacts = [...contacts];
@@ -331,7 +354,34 @@ export default function CustomerAdd() {
                                 }}
                             />
                             <input
-                                type="text" placeholder="Telefoon" className="w-full border px-2 py-1 mb-2 rounded"
+                                type="password"
+                                placeholder="Password"
+                                className="w-full border px-2 py-1 mb-2 rounded"
+                                value={contact.password}
+                                onChange={(e) => {
+                                    const newContacts = [...contacts];
+                                    newContacts[index].password = e.target.value;
+                                    setContacts(newContacts);
+                                }}
+                            />
+                            <select
+                                className="w-full border px-2 py-1 mb-2 rounded"
+                                value={contact.role}
+                                onChange={(e) => {
+                                    const newContacts = [...contacts];
+                                    newContacts[index].role = e.target.value;
+                                    setContacts(newContacts);
+                                }}
+                            >
+                                <option value="">Select Role</option>
+                                <option value="Facility">Facility</option>
+                                <option value="Supervisor">Supervisor</option>
+                                <option value="Manager">Manager</option>
+                            </select>
+                            <input
+                                type="text"
+                                placeholder="Telefoon"
+                                className="w-full border px-2 py-1 mb-2 rounded"
                                 value={contact.phone}
                                 onChange={(e) => {
                                     const newContacts = [...contacts];
@@ -348,7 +398,16 @@ export default function CustomerAdd() {
                     <button className="bg-blue-500 text-white px-3 py-2 rounded-lg w-full" onClick={addContact}>
                         + Add Contactpersoon
                     </button>
-                </div>
+                </>
+            ) : (
+                <button
+                    className="bg-blue-500 text-white px-3 py-2 rounded-lg w-full"
+                    onClick={() => setShowContacts(true)}
+                >
+                    + Add Contact Persons
+                </button>
+            )}
+        </div>
             </div>
 
             {/* ✅ Add Customer Butonu */}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     FaPlus, FaArrowLeft, FaBuilding, FaLocationArrow, FaHome,
@@ -13,8 +13,22 @@ export default function BuildingAdd() {
         status: "Active", note: "", calculateType: "Fixed"
     });
 
+    const [customers, setCustomers] = useState([]);
+    const [selectedCustomer, setSelectedCustomer] = useState("");
+
+    useEffect(() => {
+        fetch("http://localhost:8080/customers")
+            .then(res => res.json())
+            .then(data => setCustomers(data))
+            .catch(error => console.error("Failed to fetch customers:", error));
+    }, []);
+
     const addBuilding = async () => {
         console.log("🛜 Butona tıklandı, fetch fonksiyonu çalışıyor..."); // 🛠 Debug log
+        if (!selectedCustomer) {
+            toast.error("Please select a customer!", { position: "top-right" });
+            return;
+        }
 
         if (!newBuilding.name || !newBuilding.address || !newBuilding.houseNo || !newBuilding.postCode || !newBuilding.plaats || !newBuilding.status || !newBuilding.note || !newBuilding.calculateType) {
             toast.error("All fields are required!", { position: "top-right" });
@@ -31,7 +45,7 @@ export default function BuildingAdd() {
             const response = await fetch("https://api-osius.up.railway.app/buildings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newBuilding),
+                body: JSON.stringify({ ...newBuilding, customerId: selectedCustomer })
             });
 
             console.log("📌 API isteği yapıldı, response bekleniyor...");
@@ -87,6 +101,21 @@ export default function BuildingAdd() {
 
             {/* 📌 Sayfa İkiye Bölündü */}
             <div className="bg-white p-6 rounded-lg shadow-lg w-full flex gap-6">
+            <div className="mb-4">
+                    <label className="block text-lg font-semibold mb-2">Select Customer</label>
+                    <select
+                        className="w-full border p-2 rounded-lg"
+                        value={selectedCustomer}
+                        onChange={(e) => setSelectedCustomer(e.target.value)}
+                    >
+                        <option value="">-- Select Customer --</option>
+                        {customers.map((customer) => (
+                            <option key={customer.id} value={customer.id}>
+                                {customer.id} - {customer.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
                 {/* 🔹 Sol Taraf - Adres Bilgileri */}
                 <div className="w-1/2">
