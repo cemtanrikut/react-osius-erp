@@ -14,6 +14,8 @@ export default function Sidebar({ setSidebarWidth }) {
     }
   }, [isOpen, setSidebarWidth]);
 
+  const loginName = localStorage.getItem("name");
+
   return (
     <div
     className="flex flex-col bg-gray-700 text-white h-full min-h-screen p-3 transition-all duration-300"
@@ -149,7 +151,8 @@ export default function Sidebar({ setSidebarWidth }) {
           <span
             className={`transition-all duration-300 ${isOpen ? "ml-10 opacity-100" : "opacity-0"}`}
           >
-            {user.name}
+            {/* {user.name} */}
+            {loginName}
           </span>
         </button>
       </div>

@@ -24,6 +24,9 @@ export default function Home() {
         ],
     };
 
+    const loginID = localStorage.getItem("id");
+    console.log("Giris yapan kullanici: ", loginID)
+
     // Toplam ticket sayısı
     const totalTickets = ticketData.todo.length + ticketData.inProgress.length + ticketData.done.length;
 

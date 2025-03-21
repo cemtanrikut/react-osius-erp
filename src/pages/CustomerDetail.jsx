@@ -35,6 +35,7 @@ export default function CustomerDetail() {
     // Eğer state varsa kullan, yoksa ID'ye göre müşteriyi bul
     const customer = location.state?.customer || customerData.find((c) => c.id === id);
     const [contactPersons, setContactPersons] = useState([]);
+    const [buildings, setBuildings] = useState([]);
 
     const [showModal, setShowModal] = useState(false);
     const [newContact, setNewContact] = useState({
@@ -51,6 +52,7 @@ export default function CustomerDetail() {
         return <div className="p-6">Customer not found.</div>;
     }
 
+    // Contactlari cekme
     useEffect(() => {
         const API_URL = window.location.hostname === "localhost"
             ? "http://localhost:8080"
@@ -85,6 +87,40 @@ export default function CustomerDetail() {
         console.log("Updated contactPersons state:", contactPersons);
     }, [contactPersons]); // contactPersons değiştiğinde log at
 
+    // Buildingleri cekme
+    useEffect(() => {
+        const API_URL = window.location.hostname === "localhost"
+            ? "http://localhost:8080/buildings"
+            : "https://api-osius.up.railway.app/buildings";
+    
+        const loginID = localStorage.getItem("id"); // Kullanıcının ID'sini alıyoruz
+    
+        console.log("Fetching buildings for customer:", loginID);
+    
+        fetch("https://api-osius.up.railway.app/buildings")
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then((data) => {
+                console.log("Fetched buildings:", data);
+    
+                // 🔍 Verileri `loginID`'ye (customerId) göre filtrele
+                const filteredBuildings = data.filter(building => building.customerId === loginID);
+                console.log("Filtered buildings:", filteredBuildings);
+    
+                setBuildings(filteredBuildings);
+    
+                // 🔥 Güncellenmiş state'i hemen görmek için:
+                setTimeout(() => {
+                    console.log("Updated buildings state:", filteredBuildings);
+                }, 1000);
+            })
+            .catch((error) => console.error("Buildings fetch error:", error));
+    }, []);    
+
 
     const handleAddContact = async () => {
         if (!newContact.firstName || !newContact.email || !newContact.role || !newContact.phone) {
@@ -115,6 +151,98 @@ export default function CustomerDetail() {
             setNewContact({ firstName: "", lastName: "", email: "", role: "", phone: "", password: "" });
         } catch (error) {
             console.error("Error adding contact:", error);
+        }
+    };
+
+    const [activeTab, setActiveTab] = useState('Contactpersonen');
+
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'Contactpersonen':
+                return (
+                    <div className="bg-white p-6 rounded-lg shadow-md">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xl font-bold flex items-center gap-2 text-gray-700">
+                                <FaUsers /> Contactpersonen
+                            </h3>
+                            <button
+                                className="bg-blue-500 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition"
+                                onClick={() => setShowModal(true)}
+                            >
+                                <FaPlus /> Add Contactpersonen
+                            </button>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-collapse border">
+                                <thead className="bg-gray-100">
+                                    <tr className="text-left">
+                                        <th className="p-3 border"><FaHashtag className="inline-block mr-2" /> ID</th>
+                                        <th className="p-3 border"><FaUser className="inline-block mr-2" /> Naam</th>
+                                        <th className="p-3 border"><FaClipboardList className="inline-block mr-2" /> Role</th>
+                                        <th className="p-3 border"><FaEnvelope className="inline-block mr-2" /> Email</th>
+                                        <th className="p-3 border"><FaPhone className="inline-block mr-2" /> Phone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Array.isArray(contactPersons) && contactPersons.map((contact, index) => (
+                                        <tr key={index} className="border-t hover:bg-gray-50">
+                                            <td className="p-3 border">{contact.id}</td>
+                                            <td className="p-3 border">{contact.firstName} {contact.lastName}</td>
+                                            <td className="p-3 border">{contact.role}</td>
+                                            <td className="p-3 border">{contact.email}</td>
+                                            <td className="p-3 border">{contact.phone}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                );
+                case 'Buildings':
+                    return (
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-bold flex items-center gap-2 text-gray-700">
+                                    <FaBuilding /> Buildings
+                                </h3>
+                                <button
+                                    className="bg-blue-500 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition"
+                                    onClick={() => navigate("/dashboard/buildings/add")}  // Yeni sayfaya yönlendirme
+                                >
+                                    <FaPlus /> Add Building
+                                </button>
+                            </div>
+                
+                            <div className="overflow-x-auto">
+                                <table className="w-full border-collapse border">
+                                    <thead className="bg-gray-100">
+                                        <tr className="text-left">
+                                            <th className="p-3 border"><FaHashtag className="inline-block mr-2" /> ID</th>
+                                            <th className="p-3 border"><FaUser className="inline-block mr-2" /> Naam</th>
+                                            <th className="p-3 border"><FaClipboardList className="inline-block mr-2" /> Address</th>
+                                            <th className="p-3 border"><FaEnvelope className="inline-block mr-2" /> Plaats</th>
+                                            <th className="p-3 border"><FaCheckCircle className="inline-block mr-2" /> Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {Array.isArray(buildings) && buildings.map((building, index) => (
+                                            <tr key={index} className="border-t hover:bg-gray-50">
+                                                <td className="p-3 border">{building.id}</td>
+                                                <td className="p-3 border">{building.name}</td>
+                                                <td className="p-3 border">{building.address}</td>
+                                                <td className="p-3 border">{building.plaats}</td>
+                                                <td className="p-3 border">{building.status}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    );
+                
+            default:
+                return null;
         }
     };
 
@@ -180,51 +308,24 @@ export default function CustomerDetail() {
 
             </div>
 
-            {/* 📌 **Contact Persons Tablosu (Eğer Kayıt Varsa Göster) */}
-            {/* {contactPersons && contactPersons.length > 0 && ( */}
-            <div className="bg-white p-6 rounded-lg shadow-md mt-6">
-                {/* 📌 Contactpersonen Başlık + Buton */}
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold flex items-center gap-2 text-gray-700">
-                        <FaUsers /> Contactpersonen
-                    </h3>
-
-                    {/* ➕ Add Contactpersonen Butonu */}
+            <div className="mt-10">
+                <div className="flex mb-4">
                     <button
-                        className="bg-blue-500 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition"
-                        onClick={() => setShowModal(true)}
+                        className={`px-4 py-2 ${activeTab === 'Contactpersonen' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} rounded-t-lg`}
+                        onClick={() => setActiveTab('Contactpersonen')}
                     >
-                        <FaPlus /> Add Contactpersonen
+                        Contactpersonen
+                    </button>
+                    <button
+                        className={`px-4 py-2 ${activeTab === 'Buildings' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} rounded-t-lg`}
+                        onClick={() => setActiveTab('Buildings')}
+                    >
+                        Buildings
                     </button>
                 </div>
 
-
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse border">
-                        <thead className="bg-gray-100">
-                            <tr className="text-left">
-                                <th className="p-3 border"><FaHashtag className="inline-block mr-2" /> ID</th>
-                                <th className="p-3 border"><FaUser className="inline-block mr-2" /> Naam</th>
-                                <th className="p-3 border"><FaClipboardList className="inline-block mr-2" /> Role</th>
-                                <th className="p-3 border"><FaEnvelope className="inline-block mr-2" /> Email</th>
-                                <th className="p-3 border"><FaPhone className="inline-block mr-2" /> Phone</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Array.isArray(contactPersons) && contactPersons.map((contact, index) => (
-                                <tr key={index} className="border-t hover:bg-gray-50">
-                                    <td className="p-3 border">{contact.id}</td>
-                                    <td className="p-3 border">{contact.firstName} {contact.lastName}</td>
-                                    <td className="p-3 border">{contact.role}</td>
-                                    <td className="p-3 border">{contact.email}</td>
-                                    <td className="p-3 border">{contact.phone}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                {renderTabContent()}
             </div>
-            {/* )} */}
 
             {/* ➕ Add Contact Modal */}
             {showModal && (

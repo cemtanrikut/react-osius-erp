@@ -65,9 +65,15 @@ export default function ListAdd() {
                 const customersData = await customersResponse.json();
                 const buildingsData = await buildingsResponse.json();
 
+                const loginID = localStorage.getItem("id");
+
+                // 🔍 Buildingleri loginID'ye göre filtrele
+            const filteredBuildings = buildingsData.filter(building => building.customerId === loginID);
+
+
                 setWorkers(workersData || []);
                 setCustomers(customersData || []);
-                setBuildings(buildingsData || []);
+                setBuildings(filteredBuildings || []);
             } catch (error) {
                 console.error("Error fetching data:", error);
                 toast.error("Error fetching data!");

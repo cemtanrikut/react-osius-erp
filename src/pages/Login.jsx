@@ -18,6 +18,7 @@ export default function Login() {
             // localStorage.setItem("token", "dummy_admin_token");
             localStorage.setItem("userType", "admin");
             localStorage.setItem("name", "Admin");
+            localStorage.setItem("id", "ADMIN");
             navigate("/dashboard");
             return;
         }
@@ -44,10 +45,17 @@ export default function Login() {
             // localStorage.setItem("token", data.token);
             localStorage.setItem("userType", data.userType);
             localStorage.setItem("name", data.name);  // 👈 **Kullanıcı Adını Kaydediyoruz**
+            
+            if (!data.id) {
+                localStorage.setItem("id", "ADMIN");
+            } else {
+                localStorage.setItem("id", data.id);
+            }
 
 
             // 📌 **Başarılı giriş sonrası yönlendirme**
             navigate("/dashboard");
+
 
         } catch (err) {
             setError(err.message);
