@@ -64,6 +64,16 @@ export default function List() {
     // 📌 **Tam ekran mesajlaşma için state**
     const [isChatFullScreen, setIsChatFullScreen] = useState(false);
 
+    // Soldaki ticket genisletme
+    const [expandedTicket, setExpandedTicket] = useState(null); // 🎯 Sol tarafta genişletilen ticket
+    const handleExpandTicket = (ticket) => {
+        setExpandedTicket(ticket);
+    };
+    const handleCollapseTicket = () => {
+        setExpandedTicket(null);
+    };
+
+
     // 📌 **Tam ekran modunu değiştiren fonksiyon**
     const toggleChatFullScreen = () => {
         setIsChatFullScreen(!isChatFullScreen);
@@ -490,6 +500,59 @@ export default function List() {
         }
     };
 
+    // const handleImageNavigation = (direction) => {
+    //     if (!selectedTicket?.files || selectedTicket.files.length === 0) return;
+
+    //     const images = selectedTicket.files
+    //         .map(file => getFullFileURL(file?.fileUrl || file?.FileURL || ""))
+    //         .filter(fileURL => fileURL.toLowerCase().endsWith(".jpg") || fileURL.toLowerCase().endsWith(".png"));
+
+    //     const currentIndex = images.indexOf(previewImage);
+    //     let newIndex = currentIndex + direction;
+
+    //     // Eğer en son fotoğrafa gelinmişse, ilk fotoğrafa geç (veya tam tersi)
+    //     if (newIndex >= images.length) newIndex = 0;
+    //     if (newIndex < 0) newIndex = images.length - 1;
+
+    //     setPreviewImage(images[newIndex]);
+    // };
+
+    // Fotoğrafı değiştirme fonksiyonu (İleri & Geri)
+    const handleImageNavigation = (direction) => {
+        if (!selectedTicket?.files || selectedTicket.files.length === 0) return;
+    
+        // Tüm dosyaları filtrele ve sadece resim dosyalarını al
+        const images = selectedTicket.files
+            .map(file => getFullFileURL(file?.fileUrl || file?.FileURL || ""))
+            .filter(fileURL => fileURL.toLowerCase().endsWith(".jpg") || fileURL.toLowerCase().endsWith(".jpeg") || fileURL.toLowerCase().endsWith(".png"));
+    
+        if (images.length === 0) return; // Eğer hiç resim yoksa çık
+    
+        const currentIndex = images.indexOf(previewImage);
+        let newIndex = currentIndex + direction;
+    
+        // Resimlerin sıralarını kontrol et
+        if (newIndex >= images.length) newIndex = 0; // Eğer sona gelindiyse başa dön
+        if (newIndex < 0) newIndex = images.length - 1; // Eğer başa gelindiyse sona dön
+    
+        setPreviewImage(images[newIndex]); // Yeni resmi göster
+    };
+    
+
+    // Klavye kontrol fonksiyonu (Ok tuşlarıyla geçiş)
+    const handleKeyNavigation = (e) => {
+        e.preventDefault(); // Olayın doğal davranışını engelle
+
+        if (e.key === "ArrowRight") {
+            e.stopPropagation();
+            handleImageNavigation(1); // Sağ ok tuşu → İleri git
+        } else if (e.key === "ArrowLeft") {
+            e.stopPropagation();
+            handleImageNavigation(-1); // Sol ok tuşu → Geri git
+        } else if (e.key === "Escape") {
+            setPreviewImage(null); // ESC tuşu → Kapat
+        }
+    };
 
     useEffect(() => {
         if (selectedTicket?.files) {
@@ -558,9 +621,10 @@ export default function List() {
         // let socket = new WebSocket("ws://https://api-osius.up.railway.app/ws");
         // ✅ **Prod vs. Local ortamı tespit et**
         const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-        const wsHost = window.location.hostname === "localhost"
-            ? "localhost:8080/ws" // 🛠 **Local ortam**
-            : "api-osius.up.railway.app/ws"; // 🌍 **Prod ortam**
+        // const wsHost = window.location.hostname === "localhost"
+        //     ? "localhost:8080/ws" // 🛠 **Local ortam**
+        //     : "api-osius.up.railway.app/ws"; // 🌍 **Prod ortam**
+        const wsHost = "api-osius.up.railway.app/ws"; // 🌍 **Prod ortam**
 
         const socket = new WebSocket(`${wsProtocol}://${wsHost}`);
 
@@ -597,9 +661,10 @@ export default function List() {
             console.log("❌ WebSocket bağlantısı kapatıldı. Yeniden bağlanıyor...");
             setTimeout(() => {
                 const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-                const wsHost = window.location.hostname === "localhost"
-                    ? "localhost:8080/ws" // 🛠 **Local ortam**
-                    : "api-osius.up.railway.app/ws"; // 🌍 **Prod ortam**
+                // const wsHost = window.location.hostname === "localhost"
+                //     ? "localhost:8080/ws" // 🛠 **Local ortam**
+                //     : "api-osius.up.railway.app/ws"; // 🌍 **Prod ortam**
+                const wsHost = "api-osius.up.railway.app/ws"; // 🌍 **Prod ortam**
                 setWs(new WebSocket(`${wsProtocol}://${wsHost}`));
             }, 3000);
         };
@@ -610,20 +675,41 @@ export default function List() {
         };
     }, []);
 
+    // const getFullFileURL = (fileURL) => {
+    //     if (!fileURL || typeof fileURL !== "string") {
+    //         return ""; // Eğer fileURL tanımlı değilse, boş string döndür
+    //     }
+    //     if (!fileURL.startsWith("http")) {
+    //         // return `${API_URL}${fileURL}`;
+    //         return `https://api-osius.up.railway.app/${fileURL}`;
+    //     }
+    //     // TODO: Silinecek
+    //     fileURL = fileURL.replace("http://localhost:8080/", "");
+    //     console.log("GELEN URL : ", fileURL)
+    //     return `https://api-osius.up.railway.app/${fileURL}`;
+    //     //return fileURL;
+    // };
+
     const getFullFileURL = (fileURL) => {
         if (!fileURL || typeof fileURL !== "string") {
             return ""; // Eğer fileURL tanımlı değilse, boş string döndür
         }
+
+        // URL'in başındaki "http://localhost:8080/" kısmını temizle
+        fileURL = fileURL.replace("http://localhost:8080/", "").replace("https://api-osius.up.railway.app/", "");
+
+        // Eğer URL zaten tam bir URL değilse, backend URL'i ile birleştir
         if (!fileURL.startsWith("http")) {
-            // return `${API_URL}${fileURL}`;
-            return `https://api-osius.up.railway.app/${fileURL}`;
+            fileURL = `https://api-osius.up.railway.app/${fileURL}`;
         }
-        // TODO: Silinecek
-        fileURL = fileURL.replace("http://localhost:8080/", "");
-        console.log("GELEN URL : ", fileURL)
-        return `https://api-osius.up.railway.app/${fileURL}`;
-        //return fileURL;
+
+        // 🔥 Boşlukları %20 ile değiştir
+        fileURL = fileURL.replace(/ /g, "%20");
+
+        return fileURL; // Dönüşü düzgün şekilde yap
     };
+
+
 
 
     const confirmDeleteTicket = async () => {
@@ -775,12 +861,13 @@ export default function List() {
                         .map((ticket) => (
                             <div
                                 key={ticket.ticketId}
-                                onClick={() => setSelectedTicketId(ticket.ticketId)} // 🔥 **ID üzerinden seçim yap**
+                                onClick={() => { setSelectedTicketId(ticket.ticketId); handleExpandTicket(ticket); }} // 🔥 **ID üzerinden seçim yap**
                                 className={`p-4 mb-2 rounded-lg cursor-pointer shadow-md transition-all ${selectedTicketId === ticket.ticketId
                                     ? "bg-blue-200 border-l-4 border-blue-500"
                                     : "bg-white hover:bg-gray-100"
                                     }`}
                             >
+
                                 {/* Ticket ID */}
                                 <div className="flex items-center text-gray-500 text-xs mb-2">
                                     <FaHashtag className="mr-2 text-gray-400" />
@@ -843,8 +930,126 @@ export default function List() {
                                 <div className={`mt-3 text-xs font-semibold px-3 py-1 rounded-full inline-block ${notificationTypes[ticket.notificationType]}`}>
                                     {ticket.notificationType}
                                 </div>
+                                {expandedTicket?.ticketId === ticket.ticketId && (
+                                    <div className="p-4 mt-2 rounded-lg bg-gray-100">
+                                        {/* <button onClick={handleCollapseTicket} className="text-red-500">Collapse</button> */}
+                                        {/* Taşıma Butonları */}
+                                        <div className="flex items-center justify-between">
+
+
+                                            {/* Butonlar */}
+                                            <div className="flex gap-2">
+                                                {activeTab === "todo" && (
+                                                    <button
+                                                        className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600"
+                                                        onClick={() => moveTicket(selectedTicket, "todo", "inProgress")}
+                                                    >
+                                                        Move to In Progress
+                                                    </button>
+                                                )}
+                                                {activeTab === "inProgress" && (
+                                                    <>
+                                                        <button
+                                                            className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
+                                                            onClick={() => moveTicket(selectedTicket, "inProgress", "todo")}
+                                                        >
+                                                            Move to To Do
+                                                        </button>
+                                                        <button
+                                                            className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
+                                                            onClick={() => moveTicket(selectedTicket, "inProgress", "done")}
+                                                        >
+                                                            Move to Done
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {activeTab === "done" && (
+                                                    <button
+                                                        className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600"
+                                                        onClick={() => moveTicket(selectedTicket, "done", "inProgress")}
+                                                    >
+                                                        Move to In Progress
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* <div>Customer: {ticket.customer}</div>
+                                    <div>Building: {ticket.building}</div> */}
+                                        {/* Açıklama (2 Satır Gösterim) */}
+                                        {/* Ticket Başlığı */}
+                                        <h3 className="text-md mt-4 font-bold">Description</h3>
+                                        <p className="mt-1 text-gray-700 whitespace-pre-line break-words">
+                                            {selectedTicket?.description ? (
+                                                selectedTicket.description.length > 150 ? (
+                                                    <>
+                                                        {selectedTicket.description.slice(0, 70)}...
+                                                        <span
+                                                            onClick={() => {
+                                                                setSelectedTicketForModal(selectedTicket); // 🔥 **Modal için seçili ticket'ı ayarla**
+                                                                setIsModalOpen(true); // 🔥 **Modalı aç**
+                                                            }}
+                                                            className="text-blue-500 font-semibold hover:underline cursor-pointer ml-1"
+                                                        >
+                                                            Read more
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    selectedTicket.description
+                                                )
+                                            ) : (
+                                                <span className="text-gray-500 italic">No description available.</span>
+                                            )}
+                                        </p>
+
+                                        {selectedTicket?.files?.length > 0 ? (
+                                            <div className="mt-4 flex gap-3 overflow-x-auto w-full max-w-full overflow-hidden">
+                                                <div className="flex gap-3 overflow-x-auto"> {/* 🌟 Scrollable container */}
+                                                    {selectedTicket.files.map((file, index) => {
+                                                        const fileURL = getFullFileURL(file?.fileUrl || file?.FileURL || "");
+
+                                                        console.log("🎯 Görüntülenecek Dosya URL'si:", fileURL);
+
+                                                        return (
+                                                            <div key={index} className="relative flex-shrink-0"> {/* 🌟 'flex-shrink-0' görsellerin genişliklerinin daralmamasını sağlar */}
+                                                                {fileURL && (fileURL.toLowerCase().endsWith(".jpg") || fileURL.toLowerCase().endsWith(".jpeg") || fileURL.toLowerCase().endsWith(".png")) ? (
+                                                                    <img
+                                                                        src={fileURL}
+                                                                        alt={`Attachment ${index + 1}`}
+                                                                        className="w-24 h-24 object-cover rounded-lg shadow cursor-pointer hover:opacity-80" // Kare boyutları sağlandı (w-32, h-32)
+                                                                        onClick={() => setPreviewImage(fileURL)}
+                                                                    />
+                                                                ) : (
+                                                                    fileURL ? (
+                                                                        <a
+                                                                            href={fileURL}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="text-blue-500 underline flex items-center"
+                                                                        >
+                                                                            <FaPaperclip className="mr-2" />
+                                                                            {file?.Filename || "Unknown File"}
+                                                                        </a>
+                                                                    ) : (
+                                                                        <p className="text-gray-500 text-sm italic">No file available</p>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500 text-sm italic">No files attached to this ticket.</p>
+                                        )}
+
+
+
+                                    </div>
+                                )}
                             </div>
                         ))}
+
                 </div>
 
 
@@ -880,52 +1085,7 @@ export default function List() {
                     {selectedTicket ? (
                         <>
                             <div>
-                                {/* Ticket ID */}
-                                <div className="flex items-center text-gray-500 text-sm mb-2">
-                                    <FaHashtag className="mr-2 text-gray-400" />
-                                    <span className="font-bold">{selectedTicket.ticketId}</span>
-                                </div>
-                                {/* Taşıma Butonları */}
-                                <div className="flex items-center justify-between">
-                                    {/* Ticket Başlığı */}
-                                    <h2 className="text-xl font-bold">{selectedTicket.title}</h2>
 
-                                    {/* Butonlar */}
-                                    <div className="flex gap-2">
-                                        {activeTab === "todo" && (
-                                            <button
-                                                className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600"
-                                                onClick={() => moveTicket(selectedTicket, "todo", "inProgress")}
-                                            >
-                                                Move to In Progress
-                                            </button>
-                                        )}
-                                        {activeTab === "inProgress" && (
-                                            <>
-                                                <button
-                                                    className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
-                                                    onClick={() => moveTicket(selectedTicket, "inProgress", "todo")}
-                                                >
-                                                    Move to To Do
-                                                </button>
-                                                <button
-                                                    className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
-                                                    onClick={() => moveTicket(selectedTicket, "inProgress", "done")}
-                                                >
-                                                    Move to Done
-                                                </button>
-                                            </>
-                                        )}
-                                        {activeTab === "done" && (
-                                            <button
-                                                className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600"
-                                                onClick={() => moveTicket(selectedTicket, "done", "inProgress")}
-                                            >
-                                                Move to In Progress
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
 
                                 {/* 🎯 Update ve Delete Butonları */}
                                 <div className="flex gap-3 mt-3">
@@ -975,114 +1135,56 @@ export default function List() {
                                 </div>
 
 
-                                {/* Atanan Kişi */}
-                                {/* <p className="text-gray-500 mt-2 flex items-center">
-                <FaUser className="mr-2 text-blue-500" />
-                {selectedTicket.assignedTo}
-                </p> */}
-
-                                {/* Konum */}
-                                {/* <p className="text-gray-500 mt-2 flex items-center">
-                                    <FaMapMarkerAlt className="mr-2 text-green-500" />
-                                    {selectedTicket.building}
-                                </p> */}
-
-                                {/* Tarih */}
-                                {/* <p className="text-gray-500 mt-2 flex items-center">
-                <FaCalendarAlt className="mr-2 text-red-500" />
-                {selectedTicket.date}
-                </p> */}
-
-                                {/* Created By */}
-                                {/* <p className="text-gray-500 mt-2 flex items-center text-xs">
-                                    <FaUser className="mr-2 text-gray-500" />
-                                    <span className="font-semibold">Created By: </span> {selectedTicket.createdBy}
-                                </p> */}
-
-                                {/* Bildirim Türü */}
-                                {/* <div className={`mt-3 text-xs font-semibold px-3 py-1 rounded-full inline-block ${notificationTypes[selectedTicket.type]}`}>
-                {selectedTicket.type}
-                </div> */}
-
-                                {/* Açıklama (2 Satır Gösterim) */}
-                                <p className="mt-4 text-gray-700 whitespace-pre-line break-words">
-                                    {selectedTicket.description.length > 150 ? (
-                                        <>
-                                            {selectedTicket.description.slice(0, 70)}...
-                                            <span
-                                                onClick={() => {
-                                                    setSelectedTicketForModal(selectedTicket); // 🔥 **Modal için seçili ticket'ı ayarla**
-                                                    setIsModalOpen(true); // 🔥 **Modalı aç**
-                                                }}
-                                                className="text-blue-500 font-semibold hover:underline cursor-pointer ml-1"
-                                            >
-                                                Read more
-                                            </span>
-                                        </>
-                                    ) : (
-                                        selectedTicket.description
-                                    )}
-                                </p>
-
-                                {/* Eğer ticket içinde birden fazla dosya varsa göster */}
-                                {selectedTicket?.files?.length > 0 ? (
-                                    <div className="mt-4 flex gap-3 overflow-x-auto">
-                                        {selectedTicket.files.map((file, index) => {
-                                            const fileURL = getFullFileURL(file?.fileUrl || file?.FileURL || "");
-                                            fileURL.replace("http://localhost:8080", "");
-                                            console.log("🎯 Görüntülenecek Dosya URL'si:", fileURL);
-
-                                            return (
-                                                <div key={index} className="relative">
-                                                    {fileURL && (fileURL.toLowerCase().endsWith(".jpg") || fileURL.toLowerCase().endsWith(".png")) ? (
-                                                        <img
-                                                            src={fileURL}
-                                                            alt={`Attachment ${index + 1}`}
-                                                            className="w-24 h-24 object-cover rounded-lg shadow cursor-pointer hover:opacity-80"
-                                                            onClick={() => setPreviewImage(fileURL)}
-                                                        />
-                                                    ) : (
-                                                        fileURL ? (
-                                                            <a
-                                                                href={fileURL}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-blue-500 underline flex items-center"
-                                                            >
-                                                                <FaPaperclip className="mr-2" />
-                                                                {file?.Filename || "Unknown File"}
-                                                            </a>
-                                                        ) : (
-                                                            <p className="text-gray-500 text-sm italic">No file available</p>
-                                                        )
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-500 text-sm italic">No files attached to this ticket.</p>
-                                )}
-
-
-
-
 
 
                                 {/* 🏷 Büyük Resim Önizleme Modali */}
                                 {previewImage && (
-                                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                    <div
+                                        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                                        onKeyDown={handleKeyNavigation} // Klavye kontrolü
+                                        tabIndex={0} // Klavye olaylarını dinleyebilmek için gerekli
+                                        ref={(ref) => {
+                                            if (ref) ref.focus(); // 🎯 Modal açıldığında otomatik olarak odaklan
+                                        }}
+                                    >
                                         <div className="bg-white p-6 rounded-lg shadow-lg w-[500px] max-w-full relative">
+                                            {/* Kapatma Butonu */}
                                             <button
                                                 className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
                                                 onClick={() => setPreviewImage(null)}
                                             >
                                                 <FaTimes />
                                             </button>
+
+                                            {/* Önceki Resme Git */}
+<button
+    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+    onClick={(e) => {
+        e.stopPropagation();  // Bu, modal kapanmasını engeller.
+        handleImageNavigation(-1);  // Bir önceki resme geçiş yapar.
+    }}
+>
+    ◀
+</button>
+
+                                            {/* Görsel */}
                                             <img src={previewImage} alt="Preview" className="w-full h-auto rounded-lg" />
+
+                                            {/* Sonraki Resme Git */}
+<button
+    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+    onClick={(e) => {
+        e.stopPropagation();  // Bu, modal kapanmasını engeller.
+        handleImageNavigation(1);  // Bir sonraki resme geçiş yapar.
+    }}
+>
+    ▶
+</button>
                                         </div>
                                     </div>
                                 )}
+
+
 
 
                             </div>
@@ -1153,18 +1255,52 @@ export default function List() {
                             </div>
                             {/* 🏷 Büyük Resim Önizleme Modali */}
                             {previewImage && (
-                                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                <div
+                                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                                    onKeyDown={handleKeyNavigation} // Klavye kontrolü
+                                    tabIndex={0} // Klavye olaylarını dinleyebilmek için gerekli
+                                    ref={(ref) => {
+                                        if (ref) ref.focus(); // 🎯 Modal açıldığında otomatik olarak odaklan
+                                    }}
+                                >
                                     <div className="bg-white p-6 rounded-lg shadow-lg w-[500px] max-w-full relative">
+                                        {/* Kapatma Butonu */}
                                         <button
                                             className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
                                             onClick={() => setPreviewImage(null)}
                                         >
                                             <FaTimes />
                                         </button>
+
+                                        {/* Önceki Resme Git */}
+<button
+    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+    onClick={(e) => {
+        e.stopPropagation();  // Bu, modal kapanmasını engeller.
+        handleImageNavigation(-1);  // Bir önceki resme geçiş yapar.
+    }}
+>
+    ◀
+</button>
+
+                                        {/* Görsel */}
                                         <img src={previewImage} alt="Preview" className="w-full h-auto rounded-lg" />
+
+                                        {/* Sonraki Resme Git */}
+<button
+    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+    onClick={(e) => {
+        e.stopPropagation();  // Bu, modal kapanmasını engeller.
+        handleImageNavigation(1);  // Bir sonraki resme geçiş yapar.
+    }}
+>
+    ▶
+</button>
                                     </div>
                                 </div>
                             )}
+
+
                             {/* Mesaj Yazma Alanı (Sabit Duracak) */}
                             <div
                                 className={`border-t flex items-center bg-white p-3 transition-all duration-300 

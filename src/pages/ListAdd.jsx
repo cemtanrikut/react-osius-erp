@@ -300,16 +300,6 @@ formData.append("metadata", JSON.stringify({ ticketID: ticketData.id }));
                         <div className="w-1/2">
                             <h2 className="text-lg font-semibold mb-4">⚙️ Assignments</h2>
 
-                            <label className="block text-sm font-semibold mt-3">Assign to</label>
-                            <select className="border px-3 py-2 rounded-lg mb-3 w-full"
-                                value={newTicket.assignedTo}
-                                onChange={(e) => setNewTicket({ ...newTicket, assignedTo: e.target.value })}
-                            >
-                                <option value="">Select a worker</option>
-                                {workers.map(worker => (
-                                    <option key={worker.id} value={worker.id}>{worker.name}</option>
-                                ))}
-                            </select>
 
                             <label className="block text-sm font-semibold mt-3">Customer</label>
                             <select className="border px-3 py-2 rounded-lg mb-3 w-full"
@@ -330,6 +320,18 @@ formData.append("metadata", JSON.stringify({ ticketID: ticketData.id }));
                                 <option value="">Select a building</option>
                                 {buildings.map(building => (
                                     <option key={building.id} value={building.id}>{building.name}</option>
+                                ))}
+                            </select>
+
+
+                            <label className="block text-sm font-semibold mt-3">Assign to</label>
+                            <select className="border px-3 py-2 rounded-lg mb-3 w-full"
+                                value={newTicket.assignedTo}
+                                onChange={(e) => setNewTicket({ ...newTicket, assignedTo: e.target.value })}
+                            >
+                                <option value="">Select a worker</option>
+                                {workers.map(worker => (
+                                    <option key={worker.id} value={worker.id}>{worker.name}</option>
                                 ))}
                             </select>
 
