@@ -520,24 +520,24 @@ export default function List() {
     // Fotoğrafı değiştirme fonksiyonu (İleri & Geri)
     const handleImageNavigation = (direction) => {
         if (!selectedTicket?.files || selectedTicket.files.length === 0) return;
-    
+
         // Tüm dosyaları filtrele ve sadece resim dosyalarını al
         const images = selectedTicket.files
             .map(file => getFullFileURL(file?.fileUrl || file?.FileURL || ""))
             .filter(fileURL => fileURL.toLowerCase().endsWith(".jpg") || fileURL.toLowerCase().endsWith(".jpeg") || fileURL.toLowerCase().endsWith(".png"));
-    
+
         if (images.length === 0) return; // Eğer hiç resim yoksa çık
-    
+
         const currentIndex = images.indexOf(previewImage);
         let newIndex = currentIndex + direction;
-    
+
         // Resimlerin sıralarını kontrol et
         if (newIndex >= images.length) newIndex = 0; // Eğer sona gelindiyse başa dön
         if (newIndex < 0) newIndex = images.length - 1; // Eğer başa gelindiyse sona dön
-    
+
         setPreviewImage(images[newIndex]); // Yeni resmi göster
     };
-    
+
 
     // Klavye kontrol fonksiyonu (Ok tuşlarıyla geçiş)
     const handleKeyNavigation = (e) => {
@@ -930,123 +930,7 @@ export default function List() {
                                 <div className={`mt-3 text-xs font-semibold px-3 py-1 rounded-full inline-block ${notificationTypes[ticket.notificationType]}`}>
                                     {ticket.notificationType}
                                 </div>
-                                {expandedTicket?.ticketId === ticket.ticketId && (
-                                    <div className="p-4 mt-2 rounded-lg bg-gray-100">
-                                        {/* <button onClick={handleCollapseTicket} className="text-red-500">Collapse</button> */}
-                                        {/* Taşıma Butonları */}
-                                        <div className="flex items-center justify-between">
-
-
-                                            {/* Butonlar */}
-                                            <div className="flex gap-2">
-                                                {activeTab === "todo" && (
-                                                    <button
-                                                        className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600"
-                                                        onClick={() => moveTicket(selectedTicket, "todo", "inProgress")}
-                                                    >
-                                                        Move to In Progress
-                                                    </button>
-                                                )}
-                                                {activeTab === "inProgress" && (
-                                                    <>
-                                                        <button
-                                                            className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
-                                                            onClick={() => moveTicket(selectedTicket, "inProgress", "todo")}
-                                                        >
-                                                            Move to To Do
-                                                        </button>
-                                                        <button
-                                                            className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
-                                                            onClick={() => moveTicket(selectedTicket, "inProgress", "done")}
-                                                        >
-                                                            Move to Done
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {activeTab === "done" && (
-                                                    <button
-                                                        className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600"
-                                                        onClick={() => moveTicket(selectedTicket, "done", "inProgress")}
-                                                    >
-                                                        Move to In Progress
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* <div>Customer: {ticket.customer}</div>
-                                    <div>Building: {ticket.building}</div> */}
-                                        {/* Açıklama (2 Satır Gösterim) */}
-                                        {/* Ticket Başlığı */}
-                                        <h3 className="text-md mt-4 font-bold">Description</h3>
-                                        <p className="mt-1 text-gray-700 whitespace-pre-line break-words">
-                                            {selectedTicket?.description ? (
-                                                selectedTicket.description.length > 150 ? (
-                                                    <>
-                                                        {selectedTicket.description.slice(0, 70)}...
-                                                        <span
-                                                            onClick={() => {
-                                                                setSelectedTicketForModal(selectedTicket); // 🔥 **Modal için seçili ticket'ı ayarla**
-                                                                setIsModalOpen(true); // 🔥 **Modalı aç**
-                                                            }}
-                                                            className="text-blue-500 font-semibold hover:underline cursor-pointer ml-1"
-                                                        >
-                                                            Read more
-                                                        </span>
-                                                    </>
-                                                ) : (
-                                                    selectedTicket.description
-                                                )
-                                            ) : (
-                                                <span className="text-gray-500 italic">No description available.</span>
-                                            )}
-                                        </p>
-
-                                        {selectedTicket?.files?.length > 0 ? (
-                                            <div className="mt-4 flex gap-3 overflow-x-auto w-full max-w-full overflow-hidden">
-                                                <div className="flex gap-3 overflow-x-auto"> {/* 🌟 Scrollable container */}
-                                                    {selectedTicket.files.map((file, index) => {
-                                                        const fileURL = getFullFileURL(file?.fileUrl || file?.FileURL || "");
-
-                                                        console.log("🎯 Görüntülenecek Dosya URL'si:", fileURL);
-
-                                                        return (
-                                                            <div key={index} className="relative flex-shrink-0"> {/* 🌟 'flex-shrink-0' görsellerin genişliklerinin daralmamasını sağlar */}
-                                                                {fileURL && (fileURL.toLowerCase().endsWith(".jpg") || fileURL.toLowerCase().endsWith(".jpeg") || fileURL.toLowerCase().endsWith(".png")) ? (
-                                                                    <img
-                                                                        src={fileURL}
-                                                                        alt={`Attachment ${index + 1}`}
-                                                                        className="w-24 h-24 object-cover rounded-lg shadow cursor-pointer hover:opacity-80" // Kare boyutları sağlandı (w-32, h-32)
-                                                                        onClick={() => setPreviewImage(fileURL)}
-                                                                    />
-                                                                ) : (
-                                                                    fileURL ? (
-                                                                        <a
-                                                                            href={fileURL}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="text-blue-500 underline flex items-center"
-                                                                        >
-                                                                            <FaPaperclip className="mr-2" />
-                                                                            {file?.Filename || "Unknown File"}
-                                                                        </a>
-                                                                    ) : (
-                                                                        <p className="text-gray-500 text-sm italic">No file available</p>
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <p className="text-gray-500 text-sm italic">No files attached to this ticket.</p>
-                                        )}
-
-
-
-                                    </div>
-                                )}
+                                
                             </div>
                         ))}
 
@@ -1104,6 +988,41 @@ export default function List() {
                                     >
                                         Delete
                                     </button>
+                                    {/* Butonlar */}
+                                    <div className="flex gap-2">
+                                                {activeTab === "todo" && (
+                                                    <button
+                                                        className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600"
+                                                        onClick={() => moveTicket(selectedTicket, "todo", "inProgress")}
+                                                    >
+                                                        Move to In Progress
+                                                    </button>
+                                                )}
+                                                {activeTab === "inProgress" && (
+                                                    <>
+                                                        <button
+                                                            className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
+                                                            onClick={() => moveTicket(selectedTicket, "inProgress", "todo")}
+                                                        >
+                                                            Move to To Do
+                                                        </button>
+                                                        <button
+                                                            className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
+                                                            onClick={() => moveTicket(selectedTicket, "inProgress", "done")}
+                                                        >
+                                                            Move to Done
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {activeTab === "done" && (
+                                                    <button
+                                                        className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600"
+                                                        onClick={() => moveTicket(selectedTicket, "done", "inProgress")}
+                                                    >
+                                                        Move to In Progress
+                                                    </button>
+                                                )}
+                                            </div>
                                     {/* ❌ **Delete Confirmation Modal** */}
                                     <Transition appear show={isDeleteModalOpen} as={Fragment}>
                                         <Dialog as="div" className="relative z-10" onClose={() => setIsDeleteModalOpen(false)}>
@@ -1157,29 +1076,29 @@ export default function List() {
                                             </button>
 
                                             {/* Önceki Resme Git */}
-<button
-    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
-    onClick={(e) => {
-        e.stopPropagation();  // Bu, modal kapanmasını engeller.
-        handleImageNavigation(-1);  // Bir önceki resme geçiş yapar.
-    }}
->
-    ◀
-</button>
+                                            <button
+                                                className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();  // Bu, modal kapanmasını engeller.
+                                                    handleImageNavigation(-1);  // Bir önceki resme geçiş yapar.
+                                                }}
+                                            >
+                                                ◀
+                                            </button>
 
                                             {/* Görsel */}
                                             <img src={previewImage} alt="Preview" className="w-full h-auto rounded-lg" />
 
                                             {/* Sonraki Resme Git */}
-<button
-    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
-    onClick={(e) => {
-        e.stopPropagation();  // Bu, modal kapanmasını engeller.
-        handleImageNavigation(1);  // Bir sonraki resme geçiş yapar.
-    }}
->
-    ▶
-</button>
+                                            <button
+                                                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();  // Bu, modal kapanmasını engeller.
+                                                    handleImageNavigation(1);  // Bir sonraki resme geçiş yapar.
+                                                }}
+                                            >
+                                                ▶
+                                            </button>
                                         </div>
                                     </div>
                                 )}
@@ -1214,6 +1133,57 @@ export default function List() {
                                         {isChatFullScreen ? <FaCompress className="text-gray-700 text-xl" /> : <FaExpand className="text-gray-700 text-xl" />}
                                     </button>
                                 </div>
+
+                                {/* 📌 Seçili ticket'ın açıklaması ve dosyaları */}
+                                {selectedTicket && (
+                                    <div className="mb-4">
+                                        {/* Açıklama */}
+                                        <div className="mb-3 p-3 bg-white rounded-md shadow">
+                                            <h3 className="font-semibold text-gray-700 mb-1">Description</h3>
+                                            <p className="text-gray-600 whitespace-pre-line break-words">
+                                                {selectedTicket.description || <span className="italic text-gray-400">No description provided.</span>}
+                                            </p>
+                                        </div>
+
+                                        {/* Dosyalar */}
+                                        {selectedTicket?.files?.length > 0 && (
+                                            <div className="p-3 bg-white rounded-md shadow">
+                                                <h3 className="font-semibold text-gray-700 mb-2">Attachments</h3>
+                                                <div className="flex gap-3 overflow-x-auto">
+                                                    {selectedTicket.files.map((file, index) => {
+                                                        const fileURL = getFullFileURL(file?.fileUrl || file?.FileURL || "");
+                                                        const isImage = fileURL.toLowerCase().endsWith(".jpg") || fileURL.toLowerCase().endsWith(".jpeg") || fileURL.toLowerCase().endsWith(".png");
+
+                                                        return (
+                                                            <div key={index} className="flex-shrink-0">
+                                                                {isImage ? (
+                                                                    <img
+                                                                        src={fileURL}
+                                                                        alt={`Attachment ${index + 1}`}
+                                                                        className="w-24 h-24 object-cover rounded-lg shadow cursor-pointer hover:opacity-80"
+                                                                        onClick={() => setPreviewImage(fileURL)}
+                                                                    />
+                                                                ) : (
+                                                                    <a
+                                                                        href={fileURL}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-blue-600 underline flex items-center"
+                                                                    >
+                                                                        <FaPaperclip className="mr-1" />
+                                                                        {file?.Filename || "Attachment"}
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+
                                 <div className="flex flex-col space-y-2">
                                     {(messages[selectedTicket.ticketId] || []).map((msg, index) => (
                                         <div
@@ -1273,29 +1243,29 @@ export default function List() {
                                         </button>
 
                                         {/* Önceki Resme Git */}
-<button
-    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
-    onClick={(e) => {
-        e.stopPropagation();  // Bu, modal kapanmasını engeller.
-        handleImageNavigation(-1);  // Bir önceki resme geçiş yapar.
-    }}
->
-    ◀
-</button>
+                                        <button
+                                            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+                                            onClick={(e) => {
+                                                e.stopPropagation();  // Bu, modal kapanmasını engeller.
+                                                handleImageNavigation(-1);  // Bir önceki resme geçiş yapar.
+                                            }}
+                                        >
+                                            ◀
+                                        </button>
 
                                         {/* Görsel */}
                                         <img src={previewImage} alt="Preview" className="w-full h-auto rounded-lg" />
 
                                         {/* Sonraki Resme Git */}
-<button
-    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
-    onClick={(e) => {
-        e.stopPropagation();  // Bu, modal kapanmasını engeller.
-        handleImageNavigation(1);  // Bir sonraki resme geçiş yapar.
-    }}
->
-    ▶
-</button>
+                                        <button
+                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+                                            onClick={(e) => {
+                                                e.stopPropagation();  // Bu, modal kapanmasını engeller.
+                                                handleImageNavigation(1);  // Bir sonraki resme geçiş yapar.
+                                            }}
+                                        >
+                                            ▶
+                                        </button>
                                     </div>
                                 </div>
                             )}
